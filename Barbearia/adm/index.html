@@ -138,7 +138,7 @@
     </div>
 
     <script type="module">
-        // ATENÇÃO: Importando com letra minúscula (apibase.js) para funcionar no Vercel
+        // ✅ IMPORT CORRIGIDO: apibase.js (minúsculo) para bater com sua pasta
         import api from './adds/apibase.js';
 
         // --- UTILITÁRIOS ---
@@ -157,7 +157,7 @@
             if(el) el.addEventListener('input', (e) => e.target.value = maskCPF(e.target.value));
         });
 
-        // --- NAVEGAÇÃO ---
+        // --- NAVEGAÇÃO ENTRE TELAS ---
         const views = ['view-login', 'view-recuperar', 'view-confirmar'];
         const showView = (id) => {
             views.forEach(v => document.getElementById(v).classList.add('hidden'));
@@ -178,22 +178,24 @@
             const senha = document.getElementById('loginSenha').value;
 
             try {
+                // Chama a API de login
                 const response = await api.post('/api/auth/login', { cpf, senha });
                 const dados = response.data;
 
                 if (dados.sucesso) {
-                    const tipo = dados.dados.usuario.tipo; // admin, gerente, funcionario...
+                    const tipo = dados.dados.usuario.tipo; // admin, gerente, barbeiro...
 
-                    // BLOQUEIO: Se for Cliente, não pode entrar
+                    // BLOQUEIO DE SEGURANÇA
+                    // Se o usuário for 'cliente', proíbe a entrada no painel ADM
                     if (tipo === 'cliente' || tipo === 'usuario') {
-                        throw new Error("Acesso restrito. Use o app de clientes.");
+                        throw new Error("Acesso restrito a colaboradores.");
                     }
 
-                    // SALVA TOKEN E DADOS (Chaves com 'adm_' para não misturar)
+                    // SUCESSO: Salva token de admin
                     localStorage.setItem('adm_token', dados.dados.token);
                     localStorage.setItem('adm_usuario', JSON.stringify(dados.dados.usuario));
                     
-                    // REDIRECIONA
+                    // Verifica se já aceitou os termos antes de redirecionar
                     if (localStorage.getItem('adm_termo_aceito')) {
                         window.location.href = 'dashboard.html';
                     } else {
@@ -203,7 +205,7 @@
                     throw new Error(dados.erro);
                 }
             } catch (error) {
-                msg.innerText = error.response?.data?.erro || error.message || "Erro ao entrar.";
+                msg.innerText = error.response?.data?.erro || error.message || "Erro ao conectar.";
                 msg.classList.remove('hidden');
                 btn.innerText = "Acessar Painel"; btn.disabled = false;
             }
@@ -224,6 +226,7 @@
                     msg.innerText = "Código enviado! Verifique seu WhatsApp.";
                     msg.className = "text-center text-sm mt-2 text-green-500 font-bold block";
                     
+                    // Prepara a tela de confirmação
                     document.getElementById('confCpf').value = cpf;
                     setTimeout(() => { 
                         window.showConfirmar(); 
@@ -233,7 +236,7 @@
                     }, 2000);
                 }
             } catch (error) {
-                msg.innerText = error.response?.data?.erro || "Erro ao solicitar.";
+                msg.innerText = error.response?.data?.erro || "Erro ao solicitar código.";
                 msg.className = "text-center text-sm mt-2 text-red-500 block";
                 btn.innerText = "Enviar Código"; btn.disabled = false;
             }
@@ -259,7 +262,7 @@
                     msg.innerText = "Senha alterada! Faça login.";
                     msg.className = "text-center text-sm mt-2 text-green-500 font-bold block";
                     setTimeout(() => { 
-                        window.location.reload(); 
+                        window.location.reload(); // Recarrega a página para limpar tudo
                     }, 2000);
                 }
             } catch (error) {
