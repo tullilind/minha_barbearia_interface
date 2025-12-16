@@ -79,11 +79,7 @@
                 <button onclick="window.showRecuperar()" class="text-sm text-text-secondary hover:text-white transition underline">
                     Esqueceu a senha?
                 </button>
-                
-                <p class="text-xs text-text-secondary opacity-50">
-                    Não tem conta? Solicite ao seu gerente.
-                </p>
-
+                <p class="text-xs text-text-secondary opacity-50">Não tem conta? Solicite ao seu gerente.</p>
                 <a href="../site/index.html" class="mt-4 text-xs text-text-secondary hover:text-white transition flex items-center gap-1">
                     <span class="material-symbols-outlined" style="font-size: 14px;">arrow_back</span>
                     Ir para o Site do Cliente
@@ -93,14 +89,11 @@
 
         <div id="view-recuperar" class="hidden fade-in">
             <h1 class="text-2xl font-bold text-center pb-2">Recuperar Acesso</h1>
-            <p class="text-text-secondary text-center text-sm mb-8">Digite seu CPF para receber o código no WhatsApp.</p>
+            <p class="text-text-secondary text-center text-sm mb-8">Digite seu CPF para receber o código.</p>
 
             <form id="formRecuperar" class="flex flex-col gap-4">
                 <input id="recupCpf" type="text" maxlength="14" class="form-input w-full rounded-xl bg-input-bg border-input-border text-text-primary h-12 px-6" placeholder="CPF" required />
-                
-                <button type="submit" id="btnRecuperar" class="mt-2 w-full rounded-xl h-12 bg-white text-black font-bold hover:bg-gray-200 transition">
-                    Enviar Código
-                </button>
+                <button type="submit" id="btnRecuperar" class="mt-2 w-full rounded-xl h-12 bg-white text-black font-bold hover:bg-gray-200 transition">Enviar Código</button>
                 <p id="msgRecuperar" class="text-center text-sm mt-2 hidden"></p>
             </form>
 
@@ -116,17 +109,13 @@
             <form id="formConfirmar" class="flex flex-col gap-4">
                 <input id="confCpf" type="text" class="hidden" readonly />
                 <input id="confToken" type="text" class="form-input w-full rounded-xl bg-input-bg border-input-border text-text-primary h-12 px-6" placeholder="Código (Token)" required />
-                
                 <div class="relative flex items-center">
                     <input id="confSenha" type="password" class="form-input w-full rounded-xl bg-input-bg border-input-border text-text-primary h-12 px-6 pr-12" placeholder="Nova Senha" required />
                     <button type="button" onclick="window.togglePass('confSenha', 'iconConfEye')" class="absolute right-4 text-text-secondary hover:text-white transition">
                         <span id="iconConfEye" class="material-symbols-outlined" style="font-size: 20px;">visibility</span>
                     </button>
                 </div>
-
-                <button type="submit" id="btnConfirmar" class="mt-2 w-full rounded-xl h-12 bg-white text-black font-bold hover:bg-gray-200 transition">
-                    Alterar Senha
-                </button>
+                <button type="submit" id="btnConfirmar" class="mt-2 w-full rounded-xl h-12 bg-white text-black font-bold hover:bg-gray-200 transition">Alterar Senha</button>
                 <p id="msgConfirmar" class="text-center text-sm mt-2 hidden"></p>
             </form>
 
@@ -134,14 +123,28 @@
                 <button onclick="window.showRecuperar()" class="text-sm text-text-secondary hover:text-white transition">Voltar</button>
             </div>
         </div>
-
     </div>
 
     <script type="module">
-        // ✅ IMPORT CORRIGIDO: apibase.js (minúsculo) para bater com sua pasta
-        import api from './adds/apibase.js';
+        import axios from 'axios';
 
-        // --- UTILITÁRIOS ---
+        // 1. CONFIGURAÇÃO DA API (Agora direto aqui!)
+        const api = axios.create({
+            baseURL: 'https://apisbarbearia.appguardiaomais.com.br',
+            timeout: 10000,
+            headers: { 'Content-Type': 'application/json' }
+        });
+
+        // 2. INTERCEPTADOR (Segurança do Admin)
+        api.interceptors.request.use((config) => {
+            const token = localStorage.getItem('adm_token'); // Pega token específico de ADMIN
+            if (token) {
+                config.headers.Authorization = `Bearer ${token}`;
+            }
+            return config;
+        }, (error) => Promise.reject(error));
+
+        // 3. FUNÇÕES UTILITÁRIAS
         const maskCPF = (v) => v ? v.replace(/\D/g,'').replace(/(\d{3})(\d)/,'$1.$2').replace(/(\d{3})(\d)/,'$1.$2').replace(/(\d{3})(\d{1,2})/,'$1-$2').replace(/(-\d{2})\d+?$/, '$1') : "";
         
         window.togglePass = (idInput, idIcon) => {
@@ -167,7 +170,7 @@
         window.showRecuperar = () => showView('view-recuperar');
         window.showConfirmar = () => showView('view-confirmar');
 
-        // --- 1. LOGIN ---
+        // --- 1. LOGIN DE ADMIN ---
         document.getElementById('formLoginAdm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const btn = document.getElementById('btnEntrar');
@@ -178,24 +181,23 @@
             const senha = document.getElementById('loginSenha').value;
 
             try {
-                // Chama a API de login
+                // Chama a API local configurada acima
                 const response = await api.post('/api/auth/login', { cpf, senha });
                 const dados = response.data;
 
                 if (dados.sucesso) {
                     const tipo = dados.dados.usuario.tipo; // admin, gerente, barbeiro...
 
-                    // BLOQUEIO DE SEGURANÇA
-                    // Se o usuário for 'cliente', proíbe a entrada no painel ADM
+                    // BLOQUEIO: Se for Cliente, não pode entrar
                     if (tipo === 'cliente' || tipo === 'usuario') {
-                        throw new Error("Acesso restrito a colaboradores.");
+                        throw new Error("Acesso restrito. Use o app de clientes.");
                     }
 
-                    // SUCESSO: Salva token de admin
+                    // SALVA TOKEN DE ADMIN
                     localStorage.setItem('adm_token', dados.dados.token);
                     localStorage.setItem('adm_usuario', JSON.stringify(dados.dados.usuario));
                     
-                    // Verifica se já aceitou os termos antes de redirecionar
+                    // REDIRECIONA
                     if (localStorage.getItem('adm_termo_aceito')) {
                         window.location.href = 'dashboard.html';
                     } else {
@@ -205,7 +207,7 @@
                     throw new Error(dados.erro);
                 }
             } catch (error) {
-                msg.innerText = error.response?.data?.erro || error.message || "Erro ao conectar.";
+                msg.innerText = error.response?.data?.erro || error.message || "Erro ao entrar.";
                 msg.classList.remove('hidden');
                 btn.innerText = "Acessar Painel"; btn.disabled = false;
             }
@@ -226,7 +228,6 @@
                     msg.innerText = "Código enviado! Verifique seu WhatsApp.";
                     msg.className = "text-center text-sm mt-2 text-green-500 font-bold block";
                     
-                    // Prepara a tela de confirmação
                     document.getElementById('confCpf').value = cpf;
                     setTimeout(() => { 
                         window.showConfirmar(); 
@@ -247,7 +248,6 @@
             e.preventDefault();
             const btn = document.getElementById('btnConfirmar');
             const msg = document.getElementById('msgConfirmar');
-
             btn.innerText = "Alterando..."; btn.disabled = true; msg.classList.add('hidden');
 
             const payload = {
@@ -262,7 +262,7 @@
                     msg.innerText = "Senha alterada! Faça login.";
                     msg.className = "text-center text-sm mt-2 text-green-500 font-bold block";
                     setTimeout(() => { 
-                        window.location.reload(); // Recarrega a página para limpar tudo
+                        window.location.reload(); 
                     }, 2000);
                 }
             } catch (error) {
