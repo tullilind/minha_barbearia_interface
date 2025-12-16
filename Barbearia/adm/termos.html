@@ -3,135 +3,152 @@
 <head>
     <meta charset="utf-8"/>
     <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-    <title>Termos de Conduta - Admin</title>
+    <title>Termos de Conduta e Sigilo - Admin</title>
     
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Spline+Sans:wght@400;500;700&display=swap" rel="stylesheet"/>
-    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,1,0" rel="stylesheet"/>
     
     <script>
         tailwind.config = {
             darkMode: "class",
             theme: {
                 extend: {
+                    fontFamily: { sans: ['Inter', 'sans-serif'] },
                     colors: {
-                        "background-dark": "#0a0a0a", "surface-dark": "#1a1a1a", "text-primary": "#FFFFFF", "text-secondary": "#A8A8A8", "input-bg": "rgba(255, 255, 255, 0.05)", "input-border": "rgba(255, 255, 255, 0.1)",
+                        brand: { 500: '#d4af37', 600: '#b5952f' }, // Dourado Premium
+                        dark: { 900: '#050505', 800: '#0a0a0a', 700: '#121212' }
                     },
-                    fontFamily: { display: "Spline Sans" },
-                    borderRadius: { DEFAULT: "0.5rem", full: "9999px" }
+                    animation: { 'slide-up': 'slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1)' },
+                    keyframes: { slideUp: { '0%': { transform: 'translateY(20px)', opacity: 0 }, '100%': { transform: 'translateY(0)', opacity: 1 } } }
                 }
             }
         };
     </script>
 
     <style>
-        .fade-in { animation: fadeIn 0.5s ease-in-out; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        /* Scrollbar Personalizada */
+        .custom-scroll::-webkit-scrollbar { width: 6px; }
+        .custom-scroll::-webkit-scrollbar-track { background: rgba(255,255,255,0.02); border-radius: 4px; }
+        .custom-scroll::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 4px; }
+        .custom-scroll::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.25); }
+        
+        /* Fundo com ruído sutil para textura */
+        .bg-noise { background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.03'/%3E%3C/svg%3E"); }
     </style>
 
     <script>
-        // 1. Se não tiver token de Admin, expulsa para o login
+        // 1. Valida Token
         if (!localStorage.getItem('adm_token')) {
             window.location.href = 'index.html';
         }
-
-        // 2. Se JÁ aceitou os termos antes, não precisa ver de novo -> vai pro Dashboard
+        // 2. Se já aceitou, redireciona
         if (localStorage.getItem('adm_termo_aceito')) {
             window.location.href = 'dashboard.html';
         }
     </script>
 </head>
 
-<body class="bg-background-dark font-display text-text-primary flex flex-col items-center justify-center min-h-screen p-6">
+<body class="bg-dark-900 text-white flex items-center justify-center min-h-screen p-4 relative overflow-hidden font-sans">
 
-    <div class="w-full max-w-sm fade-in">
+    <div class="absolute top-0 left-0 w-full h-full overflow-hidden z-0 pointer-events-none">
+        <div class="absolute top-[-10%] left-[20%] w-[500px] h-[500px] bg-brand-500/10 rounded-full blur-[120px]"></div>
+        <div class="absolute bottom-[-10%] right-[20%] w-[400px] h-[400px] bg-blue-500/5 rounded-full blur-[100px]"></div>
+        <div class="absolute inset-0 bg-noise"></div>
+    </div>
+
+    <div class="w-full max-w-md bg-dark-800/60 backdrop-blur-xl border border-white/10 rounded-3xl shadow-2xl z-10 animate-slide-up flex flex-col overflow-hidden">
         
-        <div class="flex justify-center mb-6">
-            <div class="h-16 w-16 rounded-2xl bg-surface-dark border border-white/10 flex items-center justify-center shadow-lg">
-                <span class="material-symbols-outlined text-3xl text-yellow-500">gavel</span>
+        <div class="p-8 pb-4 text-center border-b border-white/5">
+            <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-brand-500/20 to-brand-600/5 border border-brand-500/20 mb-6 shadow-lg shadow-brand-500/10">
+                <span class="material-symbols-rounded text-3xl text-brand-500">policy</span>
             </div>
+            <h1 class="text-2xl font-bold tracking-tight text-white mb-2">Termos de Conduta</h1>
+            <p class="text-sm text-gray-400">Leia atentamente as diretrizes de segurança.</p>
         </div>
 
-        <h1 class="text-2xl font-bold text-center pb-2">Termos de Uso Interno</h1>
-        <p class="text-text-secondary text-center text-xs mb-6 uppercase tracking-widest">Confidencialidade Obrigatória</p>
-
-        <div class="bg-surface-dark border border-white/10 rounded-2xl p-6 mb-8 text-left max-h-[50vh] overflow-y-auto shadow-inner">
+        <div class="p-6 overflow-y-auto max-h-[400px] custom-scroll space-y-6 bg-black/20">
             
-            <div class="mb-5">
-                <h3 class="font-bold text-white text-sm flex items-center gap-2 mb-1">
-                    <span class="material-symbols-outlined text-sm text-red-500">lock</span>
+            <div class="group">
+                <h3 class="flex items-center gap-2 text-sm font-semibold text-white mb-2 group-hover:text-brand-500 transition-colors">
+                    <span class="material-symbols-rounded text-lg text-brand-500">verified_user</span>
                     1. Sigilo de Dados (LGPD)
                 </h3>
-                <p class="text-text-secondary text-xs leading-relaxed text-justify">
-                    Você terá acesso a dados sensíveis de clientes (Nome, CPF, Telefone, Endereço). É <strong>estritamente proibido</strong> compartilhar, copiar, tirar "prints" ou utilizar esses dados para fins pessoais, comerciais ou externos à barbearia. A violação deste termo é passível de processo legal.
-                </p>
-            </div>
-            
-            <div class="mb-5">
-                <h3 class="font-bold text-white text-sm flex items-center gap-2 mb-1">
-                    <span class="material-symbols-outlined text-sm text-blue-500">badge</span>
-                    2. Uso Pessoal do Login
-                </h3>
-                <p class="text-text-secondary text-xs leading-relaxed text-justify">
-                    Seu login é pessoal e intransferível. Todas as ações realizadas no sistema (agendamentos, cancelamentos, fechamento de caixa, descontos) ficarão registradas em seu nome através do Log de Auditoria. Jamais compartilhe sua senha com colegas.
+                <p class="text-xs text-gray-400 leading-relaxed text-justify border-l-2 border-white/10 pl-3">
+                    Você terá acesso a dados sensíveis (Nome, CPF, Telefone, Histórico). Em conformidade com a Lei Geral de Proteção de Dados, é <strong>estritamente proibido</strong> copiar, compartilhar ou utilizar essas informações para fins externos. A quebra de sigilo é crime.
                 </p>
             </div>
 
-            <div class="mb-2">
-                <h3 class="font-bold text-white text-sm flex items-center gap-2 mb-1">
-                    <span class="material-symbols-outlined text-sm text-yellow-500">warning</span>
-                    3. Penalidades
+            <div class="group">
+                <h3 class="flex items-center gap-2 text-sm font-semibold text-white mb-2 group-hover:text-brand-500 transition-colors">
+                    <span class="material-symbols-rounded text-lg text-brand-500">badge</span>
+                    2. Credenciais de Acesso
                 </h3>
-                <p class="text-text-secondary text-xs leading-relaxed text-justify">
-                    O uso indevido da plataforma para benefício próprio, desvio de clientela ou prejuízo financeiro à empresa resultará no bloqueio imediato do seu acesso e aplicação das medidas administrativas cabíveis.
+                <p class="text-xs text-gray-400 leading-relaxed text-justify border-l-2 border-white/10 pl-3">
+                    Seu login é pessoal e intransferível. Todas as operações (agendamentos, caixa, descontos) são registradas no <em>Log de Auditoria</em> em seu nome. Nunca compartilhe sua senha com outros colaboradores.
                 </p>
             </div>
 
-            <hr class="border-white/10 my-4">
-            <p class="text-[10px] text-text-secondary text-center opacity-50">
-                Ao clicar em concordar, seu IP e horário serão registrados como assinatura digital deste termo.
-            </p>
+            <div class="group">
+                <h3 class="flex items-center gap-2 text-sm font-semibold text-white mb-2 group-hover:text-brand-500 transition-colors">
+                    <span class="material-symbols-rounded text-lg text-brand-500">gavel</span>
+                    3. Responsabilidades
+                </h3>
+                <p class="text-xs text-gray-400 leading-relaxed text-justify border-l-2 border-white/10 pl-3">
+                    O uso da plataforma para desvio de clientela, fraude financeira ou benefício próprio resultará em bloqueio imediato, demissão por justa causa e medidas judiciais cabíveis.
+                </p>
+            </div>
+
+            <div class="pt-4 border-t border-white/5">
+                <p class="text-[10px] text-gray-500 text-center uppercase tracking-wider">
+                    Documento atualizado em: <span id="dataAtual"></span>
+                </p>
+            </div>
         </div>
 
-        <button onclick="aceitarTermos()" class="w-full rounded-xl h-14 bg-white text-black font-bold text-lg hover:bg-gray-200 transition shadow-lg transform active:scale-95 flex items-center justify-center gap-2">
-            <span class="material-symbols-outlined">check_circle</span>
-            Li e Concordo
-        </button>
-
-        <button onclick="sair()" class="w-full text-center text-text-secondary text-xs mt-4 hover:text-white py-2 opacity-70 hover:opacity-100 transition">
-            Não concordo (Sair do Sistema)
-        </button>
+        <div class="p-6 bg-dark-800/80 border-t border-white/5 backdrop-blur-md">
+            <button onclick="aceitarTermos()" class="w-full h-12 bg-gradient-to-r from-brand-500 to-brand-600 hover:from-brand-400 hover:to-brand-500 text-black font-bold rounded-xl shadow-lg shadow-brand-500/20 transform transition active:scale-[0.98] flex items-center justify-center gap-2 mb-3">
+                <span class="material-symbols-rounded text-xl">signature</span>
+                Li e Concordo com os Termos
+            </button>
+            
+            <button onclick="sair()" class="w-full text-xs text-gray-500 hover:text-white transition py-2 flex items-center justify-center gap-1 group">
+                <span class="material-symbols-rounded text-base group-hover:-translate-x-1 transition">logout</span>
+                Recusar e Sair do Sistema
+            </button>
+        </div>
 
     </div>
 
     <script>
+        // Insere a data atual automaticamente
+        const hoje = new Date();
+        const opcoes = { year: 'numeric', month: 'long', day: 'numeric' };
+        document.getElementById('dataAtual').innerText = hoje.toLocaleDateString('pt-BR', opcoes);
+
         function aceitarTermos() {
-            // Verifica se o usuário existe no storage (só por garantia)
             const usuarioJson = localStorage.getItem('adm_usuario');
             
             if (usuarioJson) {
-                // 1. SALVA O ACEITE NO NAVEGADOR
-                // Isso cria a "chave" que permite entrar no Dashboard
-                localStorage.setItem('adm_termo_aceito', 'true');
-                
-                // 2. Salva a data para registro (opcional)
-                localStorage.setItem('adm_termo_data', new Date().toISOString());
-                
-                // 3. Redireciona para o Painel Principal
-                window.location.href = 'dashboard.html';
+                // Efeito visual no botão antes de ir
+                const btn = document.querySelector('button');
+                btn.innerText = "Processando aceite...";
+                btn.style.opacity = "0.8";
+
+                setTimeout(() => {
+                    localStorage.setItem('adm_termo_aceito', 'true');
+                    localStorage.setItem('adm_termo_data', new Date().toISOString());
+                    window.location.href = 'dashboard.html';
+                }, 800); // Pequeno delay para a UX
             } else {
-                // Se der erro no usuário, manda pro login
                 window.location.href = 'index.html';
             }
         }
 
         function sair() {
-            // Limpa os dados se a pessoa recusar
             localStorage.removeItem('adm_token');
             localStorage.removeItem('adm_usuario');
             localStorage.removeItem('adm_termo_aceito');
-            
-            // Volta pro login
             window.location.href = 'index.html';
         }
     </script>
