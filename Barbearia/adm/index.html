@@ -128,7 +128,7 @@
     <script type="module">
         import axios from 'axios';
 
-        // 1. CONFIGURAÇÃO DA API (INTERNA)
+        // 1. CONFIGURAÇÃO DA API (Aqui dentro para garantir funcionamento)
         const api = axios.create({
             baseURL: 'https://apisbarbearia.appguardiaomais.com.br',
             timeout: 10000,
@@ -154,13 +154,11 @@
             else { input.type = 'password'; icon.innerText = 'visibility'; }
         };
 
-        // Aplica máscara
         ['loginCpf', 'recupCpf'].forEach(id => {
             const el = document.getElementById(id);
             if(el) el.addEventListener('input', (e) => e.target.value = maskCPF(e.target.value));
         });
 
-        // Navegação
         const views = ['view-login', 'view-recuperar', 'view-confirmar'];
         const showView = (id) => {
             views.forEach(v => document.getElementById(v).classList.add('hidden'));
@@ -181,29 +179,25 @@
             const senha = document.getElementById('loginSenha').value;
 
             try {
-                // Chama a API definida aqui em cima
                 const response = await api.post('/api/auth/login', { cpf, senha });
                 const dados = response.data;
 
                 if (dados.sucesso) {
-                    const tipo = dados.dados.usuario.tipo; // admin, gerente, barbeiro...
+                    const tipo = dados.dados.usuario.tipo; 
 
-                    // BLOQUEIO: Cliente não pode entrar aqui
                     if (tipo === 'cliente' || tipo === 'usuario') {
                         throw new Error("Acesso restrito a colaboradores.");
                     }
 
-                    // SALVA TOKEN
                     localStorage.setItem('adm_token', dados.dados.token);
                     localStorage.setItem('adm_usuario', JSON.stringify(dados.dados.usuario));
                     
-                    // REDIRECIONAMENTO (Lógica de Termos)
+                    // CORREÇÃO DO REDIRECIONAMENTO AQUI:
+                    // Usa './' para garantir que procure na mesma pasta (adm)
                     if (localStorage.getItem('adm_termo_aceito')) {
-                        // Se já aceitou, vai pro Dashboard
-                        window.location.href = 'dashboard.html';
+                        window.location.href = './dashboard.html';
                     } else {
-                        // Se NÃO aceitou, vai ler os termos
-                        window.location.href = 'termos.html';
+                        window.location.href = './termos.html';
                     }
                 } else {
                     throw new Error(dados.erro);
