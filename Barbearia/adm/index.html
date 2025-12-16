@@ -128,23 +128,23 @@
     <script type="module">
         import axios from 'axios';
 
-        // 1. CONFIGURAÇÃO DA API (Agora direto aqui!)
+        // 1. CONFIGURAÇÃO DA API (INTERNA)
         const api = axios.create({
             baseURL: 'https://apisbarbearia.appguardiaomais.com.br',
             timeout: 10000,
             headers: { 'Content-Type': 'application/json' }
         });
 
-        // 2. INTERCEPTADOR (Segurança do Admin)
+        // 2. INTERCEPTADOR (Para Admin)
         api.interceptors.request.use((config) => {
-            const token = localStorage.getItem('adm_token'); // Pega token específico de ADMIN
+            const token = localStorage.getItem('adm_token');
             if (token) {
                 config.headers.Authorization = `Bearer ${token}`;
             }
             return config;
         }, (error) => Promise.reject(error));
 
-        // 3. FUNÇÕES UTILITÁRIAS
+        // 3. UTILITÁRIOS
         const maskCPF = (v) => v ? v.replace(/\D/g,'').replace(/(\d{3})(\d)/,'$1.$2').replace(/(\d{3})(\d)/,'$1.$2').replace(/(\d{3})(\d{1,2})/,'$1-$2').replace(/(-\d{2})\d+?$/, '$1') : "";
         
         window.togglePass = (idInput, idIcon) => {
@@ -154,13 +154,13 @@
             else { input.type = 'password'; icon.innerText = 'visibility'; }
         };
 
-        // Aplica Máscara nos campos de CPF
+        // Aplica máscara
         ['loginCpf', 'recupCpf'].forEach(id => {
             const el = document.getElementById(id);
             if(el) el.addEventListener('input', (e) => e.target.value = maskCPF(e.target.value));
         });
 
-        // --- NAVEGAÇÃO ENTRE TELAS ---
+        // Navegação
         const views = ['view-login', 'view-recuperar', 'view-confirmar'];
         const showView = (id) => {
             views.forEach(v => document.getElementById(v).classList.add('hidden'));
@@ -170,7 +170,7 @@
         window.showRecuperar = () => showView('view-recuperar');
         window.showConfirmar = () => showView('view-confirmar');
 
-        // --- 1. LOGIN DE ADMIN ---
+        // --- 1. LOGIN ---
         document.getElementById('formLoginAdm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const btn = document.getElementById('btnEntrar');
@@ -181,26 +181,28 @@
             const senha = document.getElementById('loginSenha').value;
 
             try {
-                // Chama a API local configurada acima
+                // Chama a API definida aqui em cima
                 const response = await api.post('/api/auth/login', { cpf, senha });
                 const dados = response.data;
 
                 if (dados.sucesso) {
                     const tipo = dados.dados.usuario.tipo; // admin, gerente, barbeiro...
 
-                    // BLOQUEIO: Se for Cliente, não pode entrar
+                    // BLOQUEIO: Cliente não pode entrar aqui
                     if (tipo === 'cliente' || tipo === 'usuario') {
-                        throw new Error("Acesso restrito. Use o app de clientes.");
+                        throw new Error("Acesso restrito a colaboradores.");
                     }
 
-                    // SALVA TOKEN DE ADMIN
+                    // SALVA TOKEN
                     localStorage.setItem('adm_token', dados.dados.token);
                     localStorage.setItem('adm_usuario', JSON.stringify(dados.dados.usuario));
                     
-                    // REDIRECIONA
+                    // REDIRECIONAMENTO (Lógica de Termos)
                     if (localStorage.getItem('adm_termo_aceito')) {
+                        // Se já aceitou, vai pro Dashboard
                         window.location.href = 'dashboard.html';
                     } else {
+                        // Se NÃO aceitou, vai ler os termos
                         window.location.href = 'termos.html';
                     }
                 } else {
@@ -213,7 +215,7 @@
             }
         });
 
-        // --- 2. SOLICITAR RECUPERAÇÃO ---
+        // --- 2. RECUPERAR ---
         document.getElementById('formRecuperar').addEventListener('submit', async (e) => {
             e.preventDefault();
             const btn = document.getElementById('btnRecuperar');
@@ -227,13 +229,11 @@
                 if (response.data.sucesso) {
                     msg.innerText = "Código enviado! Verifique seu WhatsApp.";
                     msg.className = "text-center text-sm mt-2 text-green-500 font-bold block";
-                    
                     document.getElementById('confCpf').value = cpf;
                     setTimeout(() => { 
                         window.showConfirmar(); 
                         msg.classList.add('hidden'); 
-                        btn.innerText = "Enviar Código"; 
-                        btn.disabled = false;
+                        btn.innerText = "Enviar Código"; btn.disabled = false;
                     }, 2000);
                 }
             } catch (error) {
@@ -243,7 +243,7 @@
             }
         });
 
-        // --- 3. CONFIRMAR RECUPERAÇÃO ---
+        // --- 3. CONFIRMAR ---
         document.getElementById('formConfirmar').addEventListener('submit', async (e) => {
             e.preventDefault();
             const btn = document.getElementById('btnConfirmar');
@@ -261,9 +261,7 @@
                 if (response.data.sucesso) {
                     msg.innerText = "Senha alterada! Faça login.";
                     msg.className = "text-center text-sm mt-2 text-green-500 font-bold block";
-                    setTimeout(() => { 
-                        window.location.reload(); 
-                    }, 2000);
+                    setTimeout(() => { window.location.reload(); }, 2000);
                 }
             } catch (error) {
                 msg.innerText = error.response?.data?.erro || "Token inválido.";
