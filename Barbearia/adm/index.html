@@ -110,7 +110,8 @@
     </div>
 
     <script type="module">
-        // ✅ CORREÇÃO AQUI: Importando do mesmo diretório (./apibase.js)
+        // ✅ CORREÇÃO AQUI: Importa do mesmo diretório (./apibase.js)
+        // Isso resolve o erro 404 porque os arquivos estão lado a lado.
         import api from './apibase.js';
 
         // --- UTILITÁRIOS ---
@@ -136,21 +137,21 @@
             const senha = document.getElementById('loginSenha').value;
 
             try {
-                // Usa a conexão importada do arquivo ao lado
+                // API externa
                 const response = await api.post('/api/auth/login', { cpf, senha });
                 const dados = response.data;
 
                 if (dados.sucesso) {
-                    if (dados.dados.usuario.tipo === 'cliente') throw new Error("Acesso restrito.");
+                    if (dados.dados.usuario.tipo === 'cliente') throw new Error("Acesso restrito a colaboradores.");
                     
                     localStorage.setItem('adm_token', dados.dados.token);
                     localStorage.setItem('adm_usuario', JSON.stringify(dados.dados.usuario));
                     
-                    // REDIRECIONA
+                    // Redireciona
                     if (localStorage.getItem('adm_termo_aceito')) {
-                        window.location.href = 'dashboard.html';
+                        window.location.href = './dashboard.html';
                     } else {
-                        window.location.href = 'termos.html';
+                        window.location.href = './termos.html';
                     }
                 } else { throw new Error(dados.erro); }
             } catch (error) {
