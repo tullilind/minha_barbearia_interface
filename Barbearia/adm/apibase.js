@@ -1,18 +1,26 @@
-listarUnidades: async () => {
-    try {
-        // 1. PEGA O CRACHÁ (TOKEN) DO BOLSO
-        const token = localStorage.getItem('token');
+import axios from 'axios';
 
-        // 2. MOSTRA O CRACHÁ PARA O SEGURANÇA NA HORA DE ENTRAR
-        const response = await api.get('/api/unidades?ativo=true', {
-            headers: { 
-                'Authorization': `Bearer ${token}` 
-            }
-        });
-        
-        return response.data;
-    } catch (error) {
-        console.error("Erro ao listar:", error);
-        return { sucesso: false, erro: "Erro de conexão ou Permissão negada" };
+// 1. CONFIGURAÇÃO DA API
+const api = axios.create({
+    baseURL: 'https://apisbarbearia.appguardiaomais.com.br', 
+    timeout: 10000, 
+    headers: {
+        'Content-Type': 'application/json',
     }
-},
+});
+
+// 2. INTERCEPTADOR DE SEGURANÇA (ADMIN)
+// Coloca o token automaticamente em todas as chamadas
+api.interceptors.request.use((config) => {
+    const token = localStorage.getItem('adm_token');
+    
+    if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+    }
+    
+    return config;
+}, (error) => {
+    return Promise.reject(error);
+});
+
+export default api;

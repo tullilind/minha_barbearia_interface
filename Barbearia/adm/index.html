@@ -110,11 +110,10 @@
     </div>
 
     <script type="module">
-        import axios from 'axios';
+        // 1. IMPORTA A API DO ARQUIVO EXTERNO (Nome minúsculo para não dar erro 404)
+        import api from './adds/apibase.js';
 
-        const api = axios.create({ baseURL: 'https://apisbarbearia.appguardiaomais.com.br', timeout: 10000, headers: { 'Content-Type': 'application/json' } });
-        api.interceptors.request.use((c) => { const t = localStorage.getItem('adm_token'); if(t) c.headers.Authorization = `Bearer ${t}`; return c; }, e => Promise.reject(e));
-
+        // 2. UTILITÁRIOS
         const maskCPF = (v) => v ? v.replace(/\D/g,'').replace(/(\d{3})(\d)/,'$1.$2').replace(/(\d{3})(\d)/,'$1.$2').replace(/(\d{3})(\d{1,2})/,'$1-$2').replace(/(-\d{2})\d+?$/, '$1') : "";
         
         window.togglePass = (idInput, idIcon) => {
@@ -127,23 +126,34 @@
         const showView = (id) => { ['view-login', 'view-recuperar', 'view-confirmar'].forEach(v => document.getElementById(v).classList.add('hidden')); document.getElementById(id).classList.remove('hidden'); };
         window.showLogin = () => showView('view-login'); window.showRecuperar = () => showView('view-recuperar'); window.showConfirmar = () => showView('view-confirmar');
 
-        // --- 1. LOGIN ---
+        // --- 1. LOGIN (Redireciona para TERMOS) ---
         document.getElementById('formLoginAdm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const btn = document.getElementById('btnEntrar'); const msg = document.getElementById('msgLogin');
             btn.innerText = "Verificando..."; btn.disabled = true; msg.classList.add('hidden');
 
             try {
-                const response = await api.post('/api/auth/login', { cpf: document.getElementById('loginCpf').value.replace(/\D/g, ''), senha: document.getElementById('loginSenha').value });
+                // Usa o 'api' importado lá de cima
+                const response = await api.post('/api/auth/login', { 
+                    cpf: document.getElementById('loginCpf').value.replace(/\D/g, ''), 
+                    senha: document.getElementById('loginSenha').value 
+                });
                 const dados = response.data;
 
                 if (dados.sucesso) {
                     if (dados.dados.usuario.tipo === 'cliente') throw new Error("Acesso restrito.");
+                    
                     localStorage.setItem('adm_token', dados.dados.token);
                     localStorage.setItem('adm_usuario', JSON.stringify(dados.dados.usuario));
                     
-                    // CORREÇÃO DA ROTA: Agora usa 'termos.html' sem o ./ para evitar erro no Vercel
-                    window.location.href = localStorage.getItem('adm_termo_aceito') ? 'dashboard.html' : 'termos.html';
+                    // LÓGICA DE REDIRECIONAMENTO:
+                    // Se já aceitou -> Dashboard. Se não -> Termos.
+                    if (localStorage.getItem('adm_termo_aceito')) {
+                        window.location.href = 'dashboard.html';
+                    } else {
+                        // Força ida para termos (com ./ para garantir o caminho)
+                        window.location.href = 'termos.html';
+                    }
                 } else { throw new Error(dados.erro); }
             } catch (error) {
                 msg.innerText = error.response?.data?.erro || error.message || "Erro ao entrar.";
