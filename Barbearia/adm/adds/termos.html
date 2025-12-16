@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html class="dark" lang="pt-BR">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>Termos Administrativos - Barbearia</title>
+    
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Spline+Sans:wght@400;500;700&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+
+    <script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        primary: "#FFFFFF", "background-dark": "#0a0a0a", "surface-dark": "#1a1a1a",
+                        "text-primary": "#FFFFFF", "text-secondary": "#A8A8A8", "button-bg": "#FFFFFF", "button-text": "#000000", "input-bg": "rgba(255, 255, 255, 0.05)",
+                    },
+                    fontFamily: { display: "Spline Sans" },
+                    borderRadius: { DEFAULT: "0.5rem", full: "9999px" }
+                }
+            }
+        };
+    </script>
+    
+    <style>
+        .fade-in { animation: fadeIn 0.5s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+
+    <script>
+        // 1. Se não tiver token de ADMIN, chuta para o login
+        if (!localStorage.getItem('adm_token')) {
+            window.location.href = 'index.html';
+        }
+
+        // 2. Se JÁ aceitou os termos antes, vai direto pro Dashboard
+        // Isso evita que a página apareça toda vez
+        if (localStorage.getItem('adm_termo_aceito')) {
+            window.location.href = 'dashboard.html';
+        }
+    </script>
+</head>
+
+<body class="bg-background-dark font-display text-text-primary flex flex-col items-center justify-center min-h-screen p-6">
+
+    <div class="w-full max-w-sm fade-in">
+        
+        <div class="flex justify-center mb-6">
+            <div class="h-16 w-16 rounded-2xl bg-surface-dark border border-white/10 flex items-center justify-center shadow-lg">
+                <span class="material-symbols-outlined text-3xl text-white">gavel</span>
+            </div>
+        </div>
+
+        <h1 class="text-2xl font-bold text-center pb-2">Termos de Conduta</h1>
+        <p class="text-text-secondary text-center text-xs mb-6 uppercase tracking-widest">Uso Interno e Confidencial</p>
+
+        <div class="bg-surface-dark border border-white/10 rounded-2xl p-6 mb-8 text-left max-h-[50vh] overflow-y-auto shadow-inner">
+            
+            <div class="mb-4">
+                <h3 class="font-bold text-white text-sm flex items-center gap-2 mb-1">
+                    <span class="material-symbols-outlined text-sm text-yellow-500">warning</span>
+                    1. Sigilo de Dados (LGPD)
+                </h3>
+                <p class="text-text-secondary text-xs leading-relaxed">
+                    Você terá acesso a dados sensíveis de clientes (CPF, Telefone, Endereço). É <strong>estritamente proibido</strong> compartilhar, copiar, tirar prints ou utilizar esses dados para fins pessoais ou externos à barbearia.
+                </p>
+            </div>
+            
+            <div class="mb-4">
+                <h3 class="font-bold text-white text-sm flex items-center gap-2 mb-1">
+                    <span class="material-symbols-outlined text-sm text-blue-500">badge</span>
+                    2. Uso do Sistema
+                </h3>
+                <p class="text-text-secondary text-xs leading-relaxed">
+                    Seu login é pessoal e intransferível. Todas as ações (agendamentos, cancelamentos, fechamento de caixa) ficam registradas em seu nome (Log de Auditoria). Não compartilhe sua senha.
+                </p>
+            </div>
+
+            <div class="mb-4">
+                <h3 class="font-bold text-white text-sm flex items-center gap-2 mb-1">
+                    <span class="material-symbols-outlined text-sm text-red-500">block</span>
+                    3. Responsabilidade
+                </h3>
+                <p class="text-text-secondary text-xs leading-relaxed">
+                    O uso indevido da plataforma para benefício próprio, desvio de clientela ou prejuízo financeiro resultará em bloqueio imediato do acesso e medidas administrativas cabíveis.
+                </p>
+            </div>
+
+            <hr class="border-white/10 my-4">
+            <p class="text-[10px] text-text-secondary text-center opacity-50">
+                Ao prosseguir, seu IP e horário serão registrados como aceite digital deste contrato.
+            </p>
+        </div>
+
+        <button onclick="aceitarTermos()" class="w-full rounded-xl h-14 bg-white text-black font-bold text-lg hover:bg-gray-200 transition shadow-lg transform active:scale-95 flex items-center justify-center gap-2">
+            <span class="material-symbols-outlined">check_circle</span>
+            Li e Concordo
+        </button>
+
+        <button onclick="sair()" class="w-full text-center text-text-secondary text-xs mt-4 hover:text-white py-2">
+            Não concordo (Sair do Sistema)
+        </button>
+
+    </div>
+
+    <script>
+        function aceitarTermos() {
+            // Pega dados do admin logado (só para garantir que está logado)
+            const usuarioJson = localStorage.getItem('adm_usuario');
+            
+            if (usuarioJson) {
+                // SALVA O ACEITE NO NAVEGADOR
+                // Isso é o que a verificação lá no topo (<head>) procura
+                localStorage.setItem('adm_termo_aceito', 'true');
+                
+                // Opcional: Salva a data do aceite
+                localStorage.setItem('adm_termo_data', new Date().toISOString());
+                
+                // Redireciona para o Dashboard
+                window.location.href = 'dashboard.html';
+            } else {
+                // Se der erro no usuário, manda pro login
+                window.location.href = 'index.html';
+            }
+        }
+
+        function sair() {
+            // Limpa tudo e volta pro login
+            localStorage.removeItem('adm_token');
+            localStorage.removeItem('adm_usuario');
+            localStorage.removeItem('adm_termo_aceito');
+            window.location.href = 'index.html';
+        }
+    </script>
+</body>
+</html>

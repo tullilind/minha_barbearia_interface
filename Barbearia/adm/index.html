@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html class="dark" lang="pt-BR">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>Painel Administrativo - Barbearia</title>
+    
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Spline+Sans:wght@400;500;700&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+    
+    <script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "background-dark": "#0a0a0a", "surface-dark": "#1a1a1a", "text-primary": "#FFFFFF", "text-secondary": "#A8A8A8", "input-bg": "rgba(255, 255, 255, 0.05)", "input-border": "rgba(255, 255, 255, 0.1)",
+                    },
+                    fontFamily: { display: "Spline Sans" },
+                    borderRadius: { DEFAULT: "0.5rem", full: "9999px" }
+                }
+            }
+        };
+    </script>
+
+    <script type="importmap">
+    {
+        "imports": {
+            "axios": "https://esm.sh/axios"
+        }
+    }
+    </script>
+
+    <style>
+        .fade-in { animation: fadeIn 0.4s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+
+<body class="bg-background-dark font-display text-text-primary flex flex-col items-center justify-center min-h-screen p-4">
+
+    <div class="w-full max-w-sm fade-in relative z-10">
+        
+        <div id="view-login" class="fade-in">
+            <div class="flex justify-center mb-8">
+                <div class="h-20 w-20 rounded-2xl bg-surface-dark border border-white/10 flex items-center justify-center shadow-2xl">
+                    <span class="material-symbols-outlined text-4xl text-white">admin_panel_settings</span>
+                </div>
+            </div>
+
+            <h1 class="text-3xl font-bold text-center pb-2">Acesso Restrito</h1>
+            <p class="text-text-secondary text-center text-sm mb-8">Gestão da Barbearia</p>
+
+            <form id="formLoginAdm" class="flex flex-col gap-4">
+                <div>
+                    <label class="text-xs font-bold text-text-secondary ml-4 mb-1 block uppercase">CPF</label>
+                    <input id="loginCpf" type="text" maxlength="14" class="form-input w-full rounded-xl bg-input-bg border-input-border text-text-primary h-12 px-6 focus:ring-2 focus:ring-white/20 transition" placeholder="000.000.000-00" required />
+                </div>
+                
+                <div>
+                    <label class="text-xs font-bold text-text-secondary ml-4 mb-1 block uppercase">Senha</label>
+                    <div class="relative flex items-center">
+                        <input id="loginSenha" type="password" class="form-input w-full rounded-xl bg-input-bg border-input-border text-text-primary h-12 px-6 pr-12 focus:ring-2 focus:ring-white/20 transition" placeholder="••••••••" required />
+                        <button type="button" onclick="window.togglePass('loginSenha', 'iconEye')" class="absolute right-4 text-text-secondary hover:text-white transition">
+                            <span id="iconEye" class="material-symbols-outlined" style="font-size: 20px;">visibility</span>
+                        </button>
+                    </div>
+                </div>
+
+                <button type="submit" id="btnEntrar" class="mt-4 w-full rounded-xl h-12 bg-white text-black font-bold hover:bg-gray-200 transition shadow-lg transform active:scale-95">
+                    Acessar Painel
+                </button>
+                
+                <p id="msgLogin" class="text-red-500 text-center text-sm mt-2 hidden bg-red-500/10 p-2 rounded-lg border border-red-500/20"></p>
+            </form>
+
+            <div class="mt-6 flex flex-col items-center gap-3">
+                <button onclick="window.showRecuperar()" class="text-sm text-text-secondary hover:text-white transition underline">
+                    Esqueceu a senha?
+                </button>
+                
+                <p class="text-xs text-text-secondary opacity-50">
+                    Não tem conta? Solicite ao seu gerente.
+                </p>
+
+                <a href="../site/index.html" class="mt-4 text-xs text-text-secondary hover:text-white transition flex items-center gap-1">
+                    <span class="material-symbols-outlined" style="font-size: 14px;">arrow_back</span>
+                    Ir para o Site do Cliente
+                </a>
+            </div>
+        </div>
+
+        <div id="view-recuperar" class="hidden fade-in">
+            <h1 class="text-2xl font-bold text-center pb-2">Recuperar Acesso</h1>
+            <p class="text-text-secondary text-center text-sm mb-8">Digite seu CPF para receber o código no WhatsApp.</p>
+
+            <form id="formRecuperar" class="flex flex-col gap-4">
+                <input id="recupCpf" type="text" maxlength="14" class="form-input w-full rounded-xl bg-input-bg border-input-border text-text-primary h-12 px-6" placeholder="CPF" required />
+                
+                <button type="submit" id="btnRecuperar" class="mt-2 w-full rounded-xl h-12 bg-white text-black font-bold hover:bg-gray-200 transition">
+                    Enviar Código
+                </button>
+                <p id="msgRecuperar" class="text-center text-sm mt-2 hidden"></p>
+            </form>
+
+            <div class="mt-6 text-center">
+                <button onclick="window.showLogin()" class="text-sm text-text-secondary hover:text-white transition">Voltar</button>
+            </div>
+        </div>
+
+        <div id="view-confirmar" class="hidden fade-in">
+            <h1 class="text-2xl font-bold text-center pb-2">Nova Senha</h1>
+            <p class="text-text-secondary text-center text-sm mb-8">Insira o código recebido e sua nova senha.</p>
+
+            <form id="formConfirmar" class="flex flex-col gap-4">
+                <input id="confCpf" type="text" class="hidden" readonly /> <input id="confToken" type="text" class="form-input w-full rounded-xl bg-input-bg border-input-border text-text-primary h-12 px-6" placeholder="Código (Token)" required />
+                
+                <div class="relative flex items-center">
+                    <input id="confSenha" type="password" class="form-input w-full rounded-xl bg-input-bg border-input-border text-text-primary h-12 px-6 pr-12" placeholder="Nova Senha" required />
+                    <button type="button" onclick="window.togglePass('confSenha', 'iconConfEye')" class="absolute right-4 text-text-secondary hover:text-white transition">
+                        <span id="iconConfEye" class="material-symbols-outlined" style="font-size: 20px;">visibility</span>
+                    </button>
+                </div>
+
+                <button type="submit" id="btnConfirmar" class="mt-2 w-full rounded-xl h-12 bg-white text-black font-bold hover:bg-gray-200 transition">
+                    Alterar Senha
+                </button>
+                <p id="msgConfirmar" class="text-center text-sm mt-2 hidden"></p>
+            </form>
+
+            <div class="mt-6 text-center">
+                <button onclick="window.showRecuperar()" class="text-sm text-text-secondary hover:text-white transition">Voltar</button>
+            </div>
+        </div>
+
+    </div>
+
+    <script type="module">
+        import api from './adds/apiBase.js';
+
+        // --- UTILITÁRIOS ---
+        const maskCPF = (v) => v ? v.replace(/\D/g,'').replace(/(\d{3})(\d)/,'$1.$2').replace(/(\d{3})(\d)/,'$1.$2').replace(/(\d{3})(\d{1,2})/,'$1-$2').replace(/(-\d{2})\d+?$/, '$1') : "";
+        
+        window.togglePass = (idInput, idIcon) => {
+            const input = document.getElementById(idInput);
+            const icon = document.getElementById(idIcon);
+            if (input.type === 'password') { input.type = 'text'; icon.innerText = 'visibility_off'; } 
+            else { input.type = 'password'; icon.innerText = 'visibility'; }
+        };
+
+        // Aplica Máscara nos campos de CPF
+        ['loginCpf', 'recupCpf'].forEach(id => {
+            const el = document.getElementById(id);
+            if(el) el.addEventListener('input', (e) => e.target.value = maskCPF(e.target.value));
+        });
+
+        // --- NAVEGAÇÃO ---
+        const views = ['view-login', 'view-recuperar', 'view-confirmar'];
+        const showView = (id) => {
+            views.forEach(v => document.getElementById(v).classList.add('hidden'));
+            document.getElementById(id).classList.remove('hidden');
+        };
+        window.showLogin = () => showView('view-login');
+        window.showRecuperar = () => showView('view-recuperar');
+        window.showConfirmar = () => showView('view-confirmar');
+
+        // --- 1. LOGIN ---
+        document.getElementById('formLoginAdm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('btnEntrar');
+            const msg = document.getElementById('msgLogin');
+            btn.innerText = "Verificando..."; btn.disabled = true; msg.classList.add('hidden');
+
+            const cpf = document.getElementById('loginCpf').value.replace(/\D/g, '');
+            const senha = document.getElementById('loginSenha').value;
+
+            try {
+                const response = await api.post('/api/auth/login', { cpf, senha });
+                const dados = response.data;
+
+                if (dados.sucesso) {
+                    const tipo = dados.dados.usuario.tipo;
+                    if (tipo === 'cliente') throw new Error("Acesso restrito a colaboradores.");
+
+                    localStorage.setItem('adm_token', dados.dados.token);
+                    localStorage.setItem('adm_usuario', JSON.stringify(dados.dados.usuario));
+                    
+                    window.location.href = localStorage.getItem('adm_termo_aceito') ? 'dashboard.html' : 'termos.html';
+                } else {
+                    throw new Error(dados.erro);
+                }
+            } catch (error) {
+                msg.innerText = error.response?.data?.erro || error.message || "Erro ao entrar.";
+                msg.classList.remove('hidden');
+                btn.innerText = "Acessar Painel"; btn.disabled = false;
+            }
+        });
+
+        // --- 2. SOLICITAR RECUPERAÇÃO ---
+        document.getElementById('formRecuperar').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('btnRecuperar');
+            const msg = document.getElementById('msgRecuperar');
+            const cpf = document.getElementById('recupCpf').value.replace(/\D/g, '');
+
+            btn.innerText = "Enviando..."; btn.disabled = true; msg.classList.add('hidden');
+
+            try {
+                const response = await api.post('/api/auth/recuperar-senha/solicitar', { cpf });
+                if (response.data.sucesso) {
+                    msg.innerText = "Código enviado! Verifique seu WhatsApp.";
+                    msg.className = "text-center text-sm mt-2 text-green-500 font-bold block";
+                    
+                    // Prepara próxima tela
+                    document.getElementById('confCpf').value = cpf;
+                    setTimeout(() => { 
+                        window.showConfirmar(); 
+                        msg.classList.add('hidden'); 
+                        btn.innerText = "Enviar Código"; 
+                        btn.disabled = false;
+                    }, 2000);
+                }
+            } catch (error) {
+                msg.innerText = error.response?.data?.erro || "Erro ao solicitar código.";
+                msg.className = "text-center text-sm mt-2 text-red-500 block";
+                btn.innerText = "Enviar Código"; btn.disabled = false;
+            }
+        });
+
+        // --- 3. CONFIRMAR RECUPERAÇÃO ---
+        document.getElementById('formConfirmar').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('btnConfirmar');
+            const msg = document.getElementById('msgConfirmar');
+
+            btn.innerText = "Alterando..."; btn.disabled = true; msg.classList.add('hidden');
+
+            const payload = {
+                cpf: document.getElementById('confCpf').value,
+                token: document.getElementById('confToken').value,
+                senha_nova: document.getElementById('confSenha').value
+            };
+
+            try {
+                const response = await api.post('/api/auth/recuperar-senha/confirmar', payload);
+                if (response.data.sucesso) {
+                    msg.innerText = "Senha alterada com sucesso!";
+                    msg.className = "text-center text-sm mt-2 text-green-500 font-bold block";
+                    setTimeout(() => { 
+                        window.location.reload(); // Recarrega para voltar ao login limpo
+                    }, 2000);
+                }
+            } catch (error) {
+                msg.innerText = error.response?.data?.erro || "Token inválido ou expirado.";
+                msg.className = "text-center text-sm mt-2 text-red-500 block";
+                btn.innerText = "Alterar Senha"; btn.disabled = false;
+            }
+        });
+    </script>
+</body>
+</html>
