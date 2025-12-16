@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html class="dark" lang="pt-BR">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>Barbeiros - Admin</title>
+    
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Spline+Sans:wght@400;500;700&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,1,0" rel="stylesheet"/>
+    
+    <script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        brand: { 500: '#d4af37', 600: '#b5952f' },
+                        dark: { 900: '#050505', 800: '#0a0a0a', 700: '#121212', surface: '#1E1E1E' }
+                    },
+                    fontFamily: { sans: ['Spline Sans', 'sans-serif'] }
+                }
+            }
+        };
+    </script>
+
+    <script type="importmap">
+    { "imports": { "axios": "https://esm.sh/axios" } }
+    </script>
+
+    <style>
+        body { background-color: #050505; color: white; }
+        .glass { background: rgba(30, 30, 30, 0.6); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.05); }
+        .modal { transition: opacity 0.3s ease; opacity: 0; pointer-events: none; }
+        .modal.open { opacity: 1; pointer-events: auto; }
+        .modal-content { transform: scale(0.95); transition: transform 0.3s ease; }
+        .modal.open .modal-content { transform: scale(1); }
+    </style>
+
+    <script>
+        if (!localStorage.getItem('adm_token')) window.location.href = 'index.html';
+    </script>
+</head>
+
+<body class="flex h-screen overflow-hidden font-sans">
+
+    <aside class="hidden md:flex w-72 bg-dark-800 border-r border-white/5 flex-col z-20">
+        <div class="p-8 border-b border-white/5 flex items-center gap-3">
+            <div class="h-10 w-10 rounded-xl bg-gradient-to-br from-brand-500 to-brand-600 flex items-center justify-center text-black shadow-lg">
+                <span class="material-symbols-rounded">content_cut</span>
+            </div>
+            <h1 class="font-bold text-lg">Barbearia</h1>
+        </div>
+        
+        <nav class="flex-1 p-4 space-y-2 overflow-y-auto">
+            <p class="px-4 text-xs font-bold text-gray-600 uppercase tracking-wider mb-2 mt-4">Principal</p>
+            <a href="dashboard.html" class="flex items-center gap-3 px-4 py-3 text-gray-400 hover:text-white hover:bg-white/5 rounded-xl transition">
+                <span class="material-symbols-rounded">dashboard</span> Dashboard
+            </a>
+
+            <p class="px-4 text-xs font-bold text-gray-600 uppercase tracking-wider mb-2 mt-6">Gestão</p>
+            <a href="unidades.html" class="flex items-center gap-3 px-4 py-3 text-gray-400 hover:text-white hover:bg-white/5 rounded-xl transition">
+                <span class="material-symbols-rounded">store</span> Unidades
+            </a>
+            <a href="#" class="flex items-center gap-3 px-4 py-3 bg-brand-500/10 text-brand-500 font-bold rounded-xl transition shadow-sm border border-brand-500/20">
+                <span class="material-symbols-rounded">person</span> Barbeiros
+            </a>
+            <a href="clientes.html" class="flex items-center gap-3 px-4 py-3 text-gray-400 hover:text-white hover:bg-white/5 rounded-xl transition">
+                <span class="material-symbols-rounded">group</span> Clientes
+            </a>
+
+            <p class="px-4 text-xs font-bold text-gray-600 uppercase tracking-wider mb-2 mt-6">Financeiro</p>
+            <a href="vendas.html" class="flex items-center gap-3 px-4 py-3 text-gray-400 hover:text-white hover:bg-white/5 rounded-xl transition">
+                <span class="material-symbols-rounded">payments</span> Vendas
+            </a>
+            <a href="agendamentos.html" class="flex items-center gap-3 px-4 py-3 text-gray-400 hover:text-white hover:bg-white/5 rounded-xl transition">
+                <span class="material-symbols-rounded">calendar_month</span> Agendamentos
+            </a>
+        </nav>
+
+        <div class="p-4 border-t border-white/5">
+            <button onclick="window.location.href='index.html'" class="w-full py-3 flex items-center justify-center gap-2 text-red-400 text-sm hover:bg-red-500/10 rounded-xl transition">
+                <span class="material-symbols-rounded">logout</span> Sair
+            </button>
+        </div>
+    </aside>
+
+    <main class="flex-1 flex flex-col h-screen overflow-hidden relative bg-dark-900">
+        
+        <header class="md:hidden h-16 bg-dark-800 border-b border-white/5 flex items-center justify-between px-4">
+            <a href="dashboard.html" class="text-white"><span class="material-symbols-rounded">arrow_back</span></a>
+            <span class="font-bold">Gerenciar Barbeiros</span>
+            <div class="w-6"></div>
+        </header>
+
+        <div class="flex-1 overflow-y-auto p-4 md:p-8">
+            
+            <div class="flex justify-between items-center mb-8">
+                <div>
+                    <h2 class="text-3xl font-bold text-white">Barbeiros</h2>
+                    <p class="text-gray-400 text-sm mt-1">Gerencie sua equipe e comissões.</p>
+                </div>
+                <button onclick="abrirModal()" class="bg-brand-500 hover:bg-brand-600 text-black font-bold py-2 px-4 rounded-xl flex items-center gap-2 transition shadow-lg shadow-brand-500/20 active:scale-95">
+                    <span class="material-symbols-rounded">person_add</span> Novo Barbeiro
+                </button>
+            </div>
+
+            <div id="listaBarbeiros" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                <div class="glass h-64 rounded-2xl animate-pulse bg-white/5"></div>
+                <div class="glass h-64 rounded-2xl animate-pulse bg-white/5"></div>
+            </div>
+
+        </div>
+    </main>
+
+    <div id="modalBarbeiro" class="modal fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm">
+        <div class="modal-content glass w-full max-w-lg p-6 rounded-2xl shadow-2xl border border-white/10 bg-dark-900 overflow-y-auto max-h-[90vh]">
+            <div class="flex justify-between items-center mb-6">
+                <h3 id="modalTitulo" class="text-xl font-bold text-white">Novo Barbeiro</h3>
+                <button onclick="fecharModal()" class="text-gray-400 hover:text-white">
+                    <span class="material-symbols-rounded">close</span>
+                </button>
+            </div>
+
+            <form id="formBarbeiro" class="space-y-4">
+                <input type="hidden" id="barbeiroId">
+
+                <div class="flex justify-center mb-4">
+                    <div class="h-24 w-24 rounded-full bg-white/5 border border-white/10 flex items-center justify-center relative overflow-hidden group cursor-pointer">
+                        <span class="material-symbols-rounded text-3xl text-gray-500 group-hover:text-brand-500 transition">add_a_photo</span>
+                        <input type="hidden" id="foto_base64"> </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="md:col-span-2">
+                        <label class="block text-xs text-gray-400 mb-1 uppercase tracking-wider">Nome Completo</label>
+                        <input id="nome" type="text" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:ring-2 focus:ring-brand-500 focus:border-transparent outline-none transition" placeholder="Ex: Carlos Barbeiro" required>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-xs text-gray-400 mb-1 uppercase tracking-wider">CPF</label>
+                        <input id="cpf" type="text" maxlength="14" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:ring-2 focus:ring-brand-500 focus:border-transparent outline-none transition" placeholder="000.000.000-00" required>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs text-gray-400 mb-1 uppercase tracking-wider">Telefone</label>
+                        <input id="telefone" type="tel" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:ring-2 focus:ring-brand-500 focus:border-transparent outline-none transition" placeholder="(27) 99999-9999" required>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs text-gray-400 mb-1 uppercase tracking-wider">Email (Login)</label>
+                    <input id="email" type="email" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:ring-2 focus:ring-brand-500 focus:border-transparent outline-none transition" placeholder="carlos@email.com" required>
+                </div>
+
+                <div id="divSenha">
+                    <label class="block text-xs text-gray-400 mb-1 uppercase tracking-wider">Senha Inicial</label>
+                    <input id="senha" type="password" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:ring-2 focus:ring-brand-500 focus:border-transparent outline-none transition" placeholder="******">
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs text-gray-400 mb-1 uppercase tracking-wider">Unidade</label>
+                        <select id="unidade_id" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:ring-2 focus:ring-brand-500 focus:border-transparent outline-none transition [&>option]:bg-dark-900" required>
+                            <option value="">Carregando...</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs text-gray-400 mb-1 uppercase tracking-wider">Comissão (%)</label>
+                        <input id="percentual_comissao" type="number" step="0.1" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:ring-2 focus:ring-brand-500 focus:border-transparent outline-none transition" placeholder="Ex: 50" required>
+                    </div>
+                </div>
+
+                <div class="pt-4 flex gap-3">
+                    <button type="button" onclick="fecharModal()" class="flex-1 py-3 rounded-xl border border-white/10 text-gray-300 hover:bg-white/5 transition">Cancelar</button>
+                    <button type="submit" id="btnSalvar" class="flex-1 py-3 rounded-xl bg-brand-500 text-black font-bold hover:bg-brand-600 transition shadow-lg">Salvar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script type="module">
+        // ✅ IMPORTAÇÃO DA API
+        import api from './apibase.js';
+
+        // 1. UTILITÁRIOS
+        const el = id => document.getElementById(id);
+        const container = el('listaBarbeiros');
+        
+        const maskCPF = (v) => v ? v.replace(/\D/g,'').replace(/(\d{3})(\d)/,'$1.$2').replace(/(\d{3})(\d)/,'$1.$2').replace(/(\d{3})(\d{1,2})/,'$1-$2').replace(/(-\d{2})\d+?$/, '$1') : "";
+        el('cpf').addEventListener('input', (e) => e.target.value = maskCPF(e.target.value));
+
+        // 2. FUNÇÕES VISUAIS
+        window.abrirModal = (id = null) => {
+            el('modalBarbeiro').classList.add('open');
+            el('barbeiroId').value = id || '';
+            el('modalTitulo').innerText = id ? 'Editar Barbeiro' : 'Novo Barbeiro';
+            
+            // Se tem ID (Edição), esconde a senha e desabilita campos que não podem mudar fácil (CPF/Email)
+            el('divSenha').style.display = id ? 'none' : 'block';
+            el('senha').required = !id;
+            
+            // Opcional: Bloquear CPF na edição se a API não permitir mudar
+            el('cpf').disabled = !!id; 
+
+            if(!id) {
+                el('formBarbeiro').reset();
+                carregarUnidadesNoSelect(); // Recarrega unidades fresco
+            }
+        };
+
+        window.fecharModal = () => el('modalBarbeiro').classList.remove('open');
+
+        // 3. CARREGAR UNIDADES (API 5.2) -> Para o Select
+        async function carregarUnidadesNoSelect() {
+            try {
+                const res = await api.get('/api/unidades?ativo=true');
+                const select = el('unidade_id');
+                select.innerHTML = '<option value="">Selecione a Unidade</option>';
+                
+                if(res.data.sucesso && res.data.dados) {
+                    res.data.dados.forEach(u => {
+                        const opt = document.createElement('option');
+                        opt.value = u.id;
+                        opt.innerText = u.nome;
+                        select.appendChild(opt);
+                    });
+                }
+            } catch (e) { console.error("Erro Unidades", e); }
+        }
+
+        // 4. LISTAR BARBEIROS (API 11.1)
+        async function carregarBarbeiros() {
+            try {
+                // Chama a API 11.1
+                const res = await api.get('/api/barbeiros?ativo=true'); 
+                container.innerHTML = '';
+
+                if(res.data.sucesso && res.data.dados.length > 0) {
+                    res.data.dados.forEach(b => {
+                        const card = document.createElement('div');
+                        card.className = 'glass p-6 rounded-2xl flex flex-col items-center text-center group hover:border-brand-500/50 transition duration-300 relative overflow-hidden';
+                        
+                        // Ações (Editar/Excluir)
+                        const botoes = `
+                            <div class="absolute top-4 right-4 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-black/50 rounded-lg p-1 backdrop-blur-md">
+                                <button onclick="editar(${b.id})" class="p-1.5 text-gray-300 hover:text-white hover:bg-white/10 rounded-md"><span class="material-symbols-rounded text-lg">edit</span></button>
+                                <button onclick="excluir(${b.id})" class="p-1.5 text-red-400 hover:text-red-300 hover:bg-red-500/10 rounded-md"><span class="material-symbols-rounded text-lg">delete</span></button>
+                            </div>
+                        `;
+
+                        // Avatar (Se tiver foto base64 usa ela, senão usa ícone)
+                        const avatar = b.foto_base64 
+                            ? `<img src="${b.foto_base64}" class="h-20 w-20 rounded-full object-cover mb-4 border-2 border-brand-500/50">`
+                            : `<div class="h-20 w-20 rounded-full bg-gradient-to-br from-brand-500 to-brand-600 flex items-center justify-center text-black mb-4 shadow-lg"><span class="material-symbols-rounded text-4xl">person</span></div>`;
+
+                        card.innerHTML = `
+                            ${botoes}
+                            ${avatar}
+                            
+                            <h3 class="text-xl font-bold text-white mb-1">${b.nome}</h3>
+                            <p class="text-gray-400 text-xs mb-4">${b.telefone}</p>
+                            
+                            <div class="w-full flex justify-between items-center bg-white/5 px-4 py-2 rounded-xl text-sm border border-white/5">
+                                <span class="text-brand-500 font-bold">${b.percentual_comissao}% Com.</span>
+                                <span class="text-gray-300 text-xs opacity-50">ID: ${b.id}</span>
+                            </div>
+                        `;
+                        container.appendChild(card);
+                    });
+                } else {
+                    container.innerHTML = '<div class="col-span-3 text-center py-20 opacity-50"><span class="material-symbols-rounded text-4xl mb-2">person_off</span><p>Nenhum barbeiro cadastrado.</p></div>';
+                }
+            } catch (error) {
+                console.error(error);
+                container.innerHTML = '<p class="text-red-500 col-span-3 text-center">Erro ao carregar lista.</p>';
+            }
+        }
+
+        // 5. SALVAR (API Auth p/ Criar ou API 11.3 p/ Editar)
+        el('formBarbeiro').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = el('btnSalvar');
+            const id = el('barbeiroId').value;
+            btn.innerText = "Salvando..."; btn.disabled = true;
+
+            // Dados comuns
+            const payload = {
+                nome: el('nome').value,
+                cpf: el('cpf').value.replace(/\D/g, ''),
+                telefone: el('telefone').value.replace(/\D/g, ''),
+                email: el('email').value,
+                unidade_id: el('unidade_id').value,
+                percentual_comissao: parseFloat(el('percentual_comissao').value),
+                // foto_base64: el('foto_base64').value // Se implementar upload
+            };
+
+            try {
+                if (id) {
+                    // API 11.3: Atualizar Barbeiro (PUT /api/barbeiros/:id)
+                    // Nota: A API 11.3 pede apenas nome e comissao no exemplo, mas mandamos tudo caso suporte
+                    await api.put(`/api/barbeiros/${id}`, payload);
+                } else {
+                    // API Auth Especial: Registrar Barbeiro (POST /api/auth/barbeiros/registrar)
+                    payload.senha = el('senha').value; 
+                    await api.post('/api/auth/barbeiros/registrar', payload);
+                }
+                
+                fecharModal();
+                carregarBarbeiros(); // Recarrega
+            } catch (error) {
+                alert("Erro: " + (error.response?.data?.erro || error.message));
+            } finally {
+                btn.innerText = "Salvar"; btn.disabled = false;
+            }
+        });
+
+        // 6. EDITAR (API 11.2: Obter por ID)
+        window.editar = async (id) => {
+            try {
+                await carregarUnidadesNoSelect(); // Garante select populado
+                
+                const res = await api.get(`/api/barbeiros/${id}`);
+                if(res.data.sucesso) {
+                    const b = res.data.dados;
+                    abrirModal(id);
+                    // Preenche campos
+                    el('nome').value = b.nome;
+                    el('cpf').value = maskCPF(b.cpf);
+                    el('telefone').value = b.telefone; // Ideal aplicar máscara tel
+                    // el('email').value = b.email; // Se a API 11.2 trouxer email
+                    el('percentual_comissao').value = b.percentual_comissao;
+                    // Se a API trouxer unidade_id, seleciona:
+                    // el('unidade_id').value = b.unidade_id; 
+                }
+            } catch (error) { alert("Erro ao carregar dados."); }
+        };
+
+        // 7. EXCLUIR (API 11.4: Inativar)
+        window.excluir = async (id) => {
+            if(confirm("Deseja inativar este barbeiro?")) {
+                try {
+                    await api.delete(`/api/barbeiros/${id}`);
+                    carregarBarbeiros();
+                } catch (error) { alert("Erro ao excluir."); }
+            }
+        };
+
+        // Inicializa
+        carregarUnidadesNoSelect();
+        carregarBarbeiros();
+
+        // Expõe globalmente
+        window.editar = editar;
+        window.excluir = excluir;
+    </script>
+</body>
+</html>
