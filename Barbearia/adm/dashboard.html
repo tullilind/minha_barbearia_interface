@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html class="dark" lang="pt-BR">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>Dashboard - Barbearia Admin</title>
+    
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Spline+Sans:wght@400;500;700&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,1,0" rel="stylesheet"/>
+    
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        brand: { 500: '#d4af37', 600: '#b5952f' },
+                        dark: { 900: '#050505', 800: '#0a0a0a', 700: '#121212', surface: '#1E1E1E' }
+                    },
+                    fontFamily: { sans: ['Spline Sans', 'sans-serif'] }
+                }
+            }
+        };
+    </script>
+
+    <script type="importmap">
+    { "imports": { "axios": "https://esm.sh/axios" } }
+    </script>
+
+    <style>
+        /* Estilos de Scrollbar e Glassmorphism */
+        body { background-color: #050505; color: white; }
+        .glass { background: rgba(30, 30, 30, 0.6); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.05); }
+        .sidebar-link { display: flex; align-items: center; gap: 12px; padding: 12px 16px; border-radius: 12px; color: #A8A8A8; transition: all 0.3s; }
+        .sidebar-link:hover, .sidebar-link.active { background: rgba(212, 175, 55, 0.15); color: #d4af37; font-weight: 600; }
+        .sidebar-link span { font-size: 20px; }
+        
+        /* Animação do Menu Mobile */
+        .drawer { transform: translateX(-100%); transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+        .drawer.open { transform: translateX(0); }
+    </style>
+
+    <script>
+        if (!localStorage.getItem('adm_token')) window.location.href = 'index.html';
+        // Se não aceitou termos, manda aceitar
+        if (!localStorage.getItem('adm_termo_aceito')) window.location.href = 'termos.html';
+    </script>
+</head>
+
+<body class="flex h-screen overflow-hidden font-sans">
+
+    <div id="mobileOverlay" onclick="toggleMenu()" class="fixed inset-0 bg-black/80 z-40 hidden md:hidden glass"></div>
+
+    <aside id="sidebar" class="drawer fixed md:static inset-y-0 left-0 w-72 bg-dark-800 border-r border-white/5 z-50 flex flex-col md:transform-none transition-transform duration-300">
+        
+        <div class="p-8 flex items-center gap-3 border-b border-white/5">
+            <div class="h-10 w-10 rounded-xl bg-gradient-to-br from-brand-500 to-brand-600 flex items-center justify-center text-black shadow-lg shadow-brand-500/20">
+                <span class="material-symbols-rounded">content_cut</span>
+            </div>
+            <div>
+                <h1 class="font-bold text-lg tracking-wide">Barbearia</h1>
+                <p class="text-xs text-gray-500">Painel Admin</p>
+            </div>
+        </div>
+
+        <nav class="flex-1 p-4 space-y-2 overflow-y-auto">
+            <p class="px-4 text-xs font-bold text-gray-600 uppercase tracking-wider mb-2 mt-4">Principal</p>
+            
+            <a href="#" class="sidebar-link active">
+                <span class="material-symbols-rounded">dashboard</span> Dashboard
+            </a>
+            
+            <p class="px-4 text-xs font-bold text-gray-600 uppercase tracking-wider mb-2 mt-6">Gestão</p>
+
+            <a href="unidades.html" class="sidebar-link">
+                <span class="material-symbols-rounded">store</span> Unidades
+            </a>
+            <a href="barbeiros.html" class="sidebar-link">
+                <span class="material-symbols-rounded">content_cut</span> Barbeiros
+            </a>
+            <a href="clientes.html" class="sidebar-link">
+                <span class="material-symbols-rounded">group</span> Clientes
+            </a>
+
+            <p class="px-4 text-xs font-bold text-gray-600 uppercase tracking-wider mb-2 mt-6">Financeiro</p>
+
+            <a href="vendas.html" class="sidebar-link">
+                <span class="material-symbols-rounded">payments</span> Vendas
+            </a>
+            <a href="agendamentos.html" class="sidebar-link">
+                <span class="material-symbols-rounded">calendar_month</span> Agendamentos
+            </a>
+
+            <p class="px-4 text-xs font-bold text-gray-600 uppercase tracking-wider mb-2 mt-6">Sistema</p>
+            
+            <a href="config.html" class="sidebar-link">
+                <span class="material-symbols-rounded">settings</span> Configurações
+            </a>
+        </nav>
+
+        <div class="p-4 border-t border-white/5">
+            <button onclick="sair()" class="flex items-center gap-3 w-full px-4 py-3 text-red-400 hover:bg-red-500/10 rounded-xl transition">
+                <span class="material-symbols-rounded">logout</span> Sair
+            </button>
+        </div>
+    </aside>
+
+
+    <main class="flex-1 flex flex-col h-screen overflow-hidden bg-noise relative">
+        
+        <header class="md:hidden h-16 bg-dark-800/80 backdrop-blur-md border-b border-white/5 flex items-center justify-between px-4 z-30">
+            <button onclick="toggleMenu()" class="text-white p-2">
+                <span class="material-symbols-rounded text-3xl">menu</span>
+            </button>
+            <span class="font-bold text-lg">Dashboard</span>
+            <div class="w-8"></div> </header>
+
+        <div class="flex-1 overflow-y-auto p-4 md:p-8 space-y-6">
+
+            <div class="hidden md:flex justify-between items-end mb-8">
+                <div>
+                    <h2 class="text-3xl font-bold text-white">Visão Geral</h2>
+                    <p class="text-gray-400 mt-1">Bem-vindo de volta, <span id="nomeAdmin" class="text-brand-500">Admin</span>.</p>
+                </div>
+                <div class="bg-dark-800 border border-white/10 px-4 py-2 rounded-lg flex items-center gap-2 text-sm text-gray-300">
+                    <span class="material-symbols-rounded text-brand-500 text-base">calendar_today</span>
+                    <span id="periodoAtual">Carregando data...</span>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+                <div class="glass p-6 rounded-2xl lg:col-span-2">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="font-bold text-lg">Vendas do Mês</h3>
+                        <span class="text-xs text-brand-500 bg-brand-500/10 px-2 py-1 rounded">Diário</span>
+                    </div>
+                    <div class="h-64 md:h-80 w-full">
+                        <canvas id="chartVendas"></canvas>
+                    </div>
+                </div>
+
+                <div class="glass p-6 rounded-2xl">
+                    <h3 class="font-bold text-lg mb-4">Status dos Agendamentos</h3>
+                    <div class="h-64 flex justify-center">
+                        <canvas id="chartAgendamentos"></canvas>
+                    </div>
+                </div>
+
+                <div class="glass p-6 rounded-2xl">
+                    <h3 class="font-bold text-lg mb-4">Comissões por Barbeiro</h3>
+                    <div class="h-64 w-full">
+                        <canvas id="chartComissoes"></canvas>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+    </main>
+
+    <script type="module">
+        import axios from 'axios';
+
+        // 1. CONFIGURAÇÃO API
+        const api = axios.create({ baseURL: 'https://apisbarbearia.appguardiaomais.com.br', timeout: 15000 });
+        api.interceptors.request.use(config => {
+            const token = localStorage.getItem('adm_token');
+            if(token) config.headers.Authorization = `Bearer ${token}`;
+            return config;
+        });
+
+        // 2. UTILITÁRIOS
+        const user = JSON.parse(localStorage.getItem('adm_usuario') || '{}');
+        if(user.nome) document.getElementById('nomeAdmin').innerText = user.nome.split(' ')[0];
+
+        // Define Datas (Início e Fim do Mês Atual)
+        const hoje = new Date();
+        const primeiroDia = new Date(hoje.getFullYear(), hoje.getMonth(), 1).toISOString().split('T')[0];
+        const ultimoDia = new Date(hoje.getFullYear(), hoje.getMonth() + 1, 0).toISOString().split('T')[0];
+        document.getElementById('periodoAtual').innerText = `${primeiroDia.split('-')[2]}/${primeiroDia.split('-')[1]} à ${ultimoDia.split('-')[2]}/${ultimoDia.split('-')[1]}`;
+
+        // 3. FUNÇÕES DE CARREGAMENTO (Gráficos)
+
+        async function carregarVendas() {
+            try {
+                // API 13.1
+                const res = await api.get(`/api/relatorios/vendas?data_inicio=${primeiroDia}&data_fim=${ultimoDia}`);
+                if(res.data.sucesso) {
+                    const dados = res.data.dados;
+                    const labels = dados.map(d => d.data.split('-')[2] + '/' + d.data.split('-')[1]);
+                    const valores = dados.map(d => d.total_vendas);
+
+                    new Chart(document.getElementById('chartVendas'), {
+                        type: 'line',
+                        data: {
+                            labels: labels,
+                            datasets: [{
+                                label: 'Faturamento (R$)',
+                                data: valores,
+                                borderColor: '#d4af37',
+                                backgroundColor: 'rgba(212, 175, 55, 0.1)',
+                                tension: 0.4,
+                                fill: true
+                            }]
+                        },
+                        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { grid: { color: 'rgba(255,255,255,0.05)' } }, x: { grid: { display: false } } } }
+                    });
+                }
+            } catch (e) { console.error("Erro vendas", e); }
+        }
+
+        async function carregarAgendamentos() {
+            try {
+                // API 13.2
+                const res = await api.get(`/api/relatorios/agendamentos?data_inicio=${primeiroDia}&data_fim=${ultimoDia}`);
+                if(res.data.sucesso) {
+                    const dados = res.data.dados;
+                    // Mapeia status para cores
+                    const cores = { 'agendado': '#3b82f6', 'confirmado': '#d4af37', 'concluido': '#10b981', 'cancelado': '#ef4444' };
+                    
+                    new Chart(document.getElementById('chartAgendamentos'), {
+                        type: 'doughnut',
+                        data: {
+                            labels: dados.map(d => d.status_agendamento.toUpperCase()),
+                            datasets: [{
+                                data: dados.map(d => d.quantidade),
+                                backgroundColor: dados.map(d => cores[d.status_agendamento] || '#888'),
+                                borderWidth: 0
+                            }]
+                        },
+                        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right', labels: { color: '#fff' } } } }
+                    });
+                }
+            } catch (e) { console.error("Erro agendamentos", e); }
+        }
+
+        async function carregarComissoes() {
+            try {
+                // API 13.3
+                const res = await api.get(`/api/relatorios/comissoes?data_inicio=${primeiroDia}&data_fim=${ultimoDia}`);
+                if(res.data.sucesso) {
+                    const dados = res.data.dados;
+                    
+                    new Chart(document.getElementById('chartComissoes'), {
+                        type: 'bar',
+                        data: {
+                            labels: dados.map(d => d.barbeiro_nome.split(' ')[0]),
+                            datasets: [{
+                                label: 'Comissão (R$)',
+                                data: dados.map(d => d.total_comissao),
+                                backgroundColor: '#fff',
+                                borderRadius: 4
+                            }]
+                        },
+                        options: { responsive: true, maintainAspectRatio: false, scales: { y: { grid: { color: 'rgba(255,255,255,0.05)' } }, x: { grid: { display: false } } } }
+                    });
+                }
+            } catch (e) { console.error("Erro comissoes", e); }
+        }
+
+        // Inicia
+        carregarVendas();
+        carregarAgendamentos();
+        carregarComissoes();
+
+        // Expõe funções globais para o HTML usar (Menu Mobile e Sair)
+        window.toggleMenu = () => {
+            document.getElementById('sidebar').classList.toggle('open');
+            document.getElementById('mobileOverlay').classList.toggle('hidden');
+        };
+
+        window.sair = () => {
+            localStorage.clear(); // Limpa tudo (token, usuario, termo)
+            window.location.href = 'index.html';
+        };
+    </script>
+</body>
+</html>
