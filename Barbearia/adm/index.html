@@ -57,7 +57,6 @@
                     <label class="text-xs font-bold text-text-secondary ml-4 mb-1 block uppercase">CPF</label>
                     <input id="loginCpf" type="text" maxlength="14" class="form-input w-full rounded-xl bg-input-bg border-input-border text-text-primary h-12 px-6 focus:ring-2 focus:ring-white/20 transition" placeholder="000.000.000-00" required />
                 </div>
-                
                 <div>
                     <label class="text-xs font-bold text-text-secondary ml-4 mb-1 block uppercase">Senha</label>
                     <div class="relative flex items-center">
@@ -67,22 +66,15 @@
                         </button>
                     </div>
                 </div>
-
-                <button type="submit" id="btnEntrar" class="mt-4 w-full rounded-xl h-12 bg-white text-black font-bold hover:bg-gray-200 transition shadow-lg transform active:scale-95">
-                    Acessar Painel
-                </button>
-                
+                <button type="submit" id="btnEntrar" class="mt-4 w-full rounded-xl h-12 bg-white text-black font-bold hover:bg-gray-200 transition shadow-lg transform active:scale-95">Acessar Painel</button>
                 <p id="msgLogin" class="text-red-500 text-center text-sm mt-2 hidden bg-red-500/10 p-2 rounded-lg border border-red-500/20"></p>
             </form>
 
             <div class="mt-6 flex flex-col items-center gap-3">
-                <button onclick="window.showRecuperar()" class="text-sm text-text-secondary hover:text-white transition underline">
-                    Esqueceu a senha?
-                </button>
+                <button onclick="window.showRecuperar()" class="text-sm text-text-secondary hover:text-white transition underline">Esqueceu a senha?</button>
                 <p class="text-xs text-text-secondary opacity-50">Não tem conta? Solicite ao seu gerente.</p>
                 <a href="../site/index.html" class="mt-4 text-xs text-text-secondary hover:text-white transition flex items-center gap-1">
-                    <span class="material-symbols-outlined" style="font-size: 14px;">arrow_back</span>
-                    Ir para o Site do Cliente
+                    <span class="material-symbols-outlined" style="font-size: 14px;">arrow_back</span> Ir para o Site do Cliente
                 </a>
             </div>
         </div>
@@ -90,22 +82,17 @@
         <div id="view-recuperar" class="hidden fade-in">
             <h1 class="text-2xl font-bold text-center pb-2">Recuperar Acesso</h1>
             <p class="text-text-secondary text-center text-sm mb-8">Digite seu CPF para receber o código.</p>
-
             <form id="formRecuperar" class="flex flex-col gap-4">
                 <input id="recupCpf" type="text" maxlength="14" class="form-input w-full rounded-xl bg-input-bg border-input-border text-text-primary h-12 px-6" placeholder="CPF" required />
                 <button type="submit" id="btnRecuperar" class="mt-2 w-full rounded-xl h-12 bg-white text-black font-bold hover:bg-gray-200 transition">Enviar Código</button>
                 <p id="msgRecuperar" class="text-center text-sm mt-2 hidden"></p>
             </form>
-
-            <div class="mt-6 text-center">
-                <button onclick="window.showLogin()" class="text-sm text-text-secondary hover:text-white transition">Voltar</button>
-            </div>
+            <div class="mt-6 text-center"><button onclick="window.showLogin()" class="text-sm text-text-secondary hover:text-white transition">Voltar</button></div>
         </div>
 
         <div id="view-confirmar" class="hidden fade-in">
             <h1 class="text-2xl font-bold text-center pb-2">Nova Senha</h1>
             <p class="text-text-secondary text-center text-sm mb-8">Insira o código recebido e sua nova senha.</p>
-
             <form id="formConfirmar" class="flex flex-col gap-4">
                 <input id="confCpf" type="text" class="hidden" readonly />
                 <input id="confToken" type="text" class="form-input w-full rounded-xl bg-input-bg border-input-border text-text-primary h-12 px-6" placeholder="Código (Token)" required />
@@ -118,150 +105,84 @@
                 <button type="submit" id="btnConfirmar" class="mt-2 w-full rounded-xl h-12 bg-white text-black font-bold hover:bg-gray-200 transition">Alterar Senha</button>
                 <p id="msgConfirmar" class="text-center text-sm mt-2 hidden"></p>
             </form>
-
-            <div class="mt-6 text-center">
-                <button onclick="window.showRecuperar()" class="text-sm text-text-secondary hover:text-white transition">Voltar</button>
-            </div>
+            <div class="mt-6 text-center"><button onclick="window.showRecuperar()" class="text-sm text-text-secondary hover:text-white transition">Voltar</button></div>
         </div>
     </div>
 
     <script type="module">
         import axios from 'axios';
 
-        // 1. CONFIGURAÇÃO DA API (Aqui dentro para garantir funcionamento)
-        const api = axios.create({
-            baseURL: 'https://apisbarbearia.appguardiaomais.com.br',
-            timeout: 10000,
-            headers: { 'Content-Type': 'application/json' }
-        });
+        const api = axios.create({ baseURL: 'https://apisbarbearia.appguardiaomais.com.br', timeout: 10000, headers: { 'Content-Type': 'application/json' } });
+        api.interceptors.request.use((c) => { const t = localStorage.getItem('adm_token'); if(t) c.headers.Authorization = `Bearer ${t}`; return c; }, e => Promise.reject(e));
 
-        // 2. INTERCEPTADOR (Para Admin)
-        api.interceptors.request.use((config) => {
-            const token = localStorage.getItem('adm_token');
-            if (token) {
-                config.headers.Authorization = `Bearer ${token}`;
-            }
-            return config;
-        }, (error) => Promise.reject(error));
-
-        // 3. UTILITÁRIOS
         const maskCPF = (v) => v ? v.replace(/\D/g,'').replace(/(\d{3})(\d)/,'$1.$2').replace(/(\d{3})(\d)/,'$1.$2').replace(/(\d{3})(\d{1,2})/,'$1-$2').replace(/(-\d{2})\d+?$/, '$1') : "";
         
         window.togglePass = (idInput, idIcon) => {
-            const input = document.getElementById(idInput);
-            const icon = document.getElementById(idIcon);
-            if (input.type === 'password') { input.type = 'text'; icon.innerText = 'visibility_off'; } 
-            else { input.type = 'password'; icon.innerText = 'visibility'; }
+            const i = document.getElementById(idInput); const c = document.getElementById(idIcon);
+            if (i.type === 'password') { i.type = 'text'; c.innerText = 'visibility_off'; } else { i.type = 'password'; c.innerText = 'visibility'; }
         };
 
-        ['loginCpf', 'recupCpf'].forEach(id => {
-            const el = document.getElementById(id);
-            if(el) el.addEventListener('input', (e) => e.target.value = maskCPF(e.target.value));
-        });
+        ['loginCpf', 'recupCpf'].forEach(id => { const el = document.getElementById(id); if(el) el.addEventListener('input', (e) => e.target.value = maskCPF(e.target.value)); });
 
-        const views = ['view-login', 'view-recuperar', 'view-confirmar'];
-        const showView = (id) => {
-            views.forEach(v => document.getElementById(v).classList.add('hidden'));
-            document.getElementById(id).classList.remove('hidden');
-        };
-        window.showLogin = () => showView('view-login');
-        window.showRecuperar = () => showView('view-recuperar');
-        window.showConfirmar = () => showView('view-confirmar');
+        const showView = (id) => { ['view-login', 'view-recuperar', 'view-confirmar'].forEach(v => document.getElementById(v).classList.add('hidden')); document.getElementById(id).classList.remove('hidden'); };
+        window.showLogin = () => showView('view-login'); window.showRecuperar = () => showView('view-recuperar'); window.showConfirmar = () => showView('view-confirmar');
 
         // --- 1. LOGIN ---
         document.getElementById('formLoginAdm').addEventListener('submit', async (e) => {
             e.preventDefault();
-            const btn = document.getElementById('btnEntrar');
-            const msg = document.getElementById('msgLogin');
+            const btn = document.getElementById('btnEntrar'); const msg = document.getElementById('msgLogin');
             btn.innerText = "Verificando..."; btn.disabled = true; msg.classList.add('hidden');
 
-            const cpf = document.getElementById('loginCpf').value.replace(/\D/g, '');
-            const senha = document.getElementById('loginSenha').value;
-
             try {
-                const response = await api.post('/api/auth/login', { cpf, senha });
+                const response = await api.post('/api/auth/login', { cpf: document.getElementById('loginCpf').value.replace(/\D/g, ''), senha: document.getElementById('loginSenha').value });
                 const dados = response.data;
 
                 if (dados.sucesso) {
-                    const tipo = dados.dados.usuario.tipo; 
-
-                    if (tipo === 'cliente' || tipo === 'usuario') {
-                        throw new Error("Acesso restrito a colaboradores.");
-                    }
-
+                    if (dados.dados.usuario.tipo === 'cliente') throw new Error("Acesso restrito.");
                     localStorage.setItem('adm_token', dados.dados.token);
                     localStorage.setItem('adm_usuario', JSON.stringify(dados.dados.usuario));
                     
-                    // CORREÇÃO DO REDIRECIONAMENTO AQUI:
-                    // Usa './' para garantir que procure na mesma pasta (adm)
-                    if (localStorage.getItem('adm_termo_aceito')) {
-                        window.location.href = './dashboard.html';
-                    } else {
-                        window.location.href = './termos.html';
-                    }
-                } else {
-                    throw new Error(dados.erro);
-                }
+                    // CORREÇÃO DA ROTA: Agora usa 'termos.html' sem o ./ para evitar erro no Vercel
+                    window.location.href = localStorage.getItem('adm_termo_aceito') ? 'dashboard.html' : 'termos.html';
+                } else { throw new Error(dados.erro); }
             } catch (error) {
                 msg.innerText = error.response?.data?.erro || error.message || "Erro ao entrar.";
-                msg.classList.remove('hidden');
-                btn.innerText = "Acessar Painel"; btn.disabled = false;
+                msg.classList.remove('hidden'); btn.innerText = "Acessar Painel"; btn.disabled = false;
             }
         });
 
         // --- 2. RECUPERAR ---
         document.getElementById('formRecuperar').addEventListener('submit', async (e) => {
             e.preventDefault();
-            const btn = document.getElementById('btnRecuperar');
-            const msg = document.getElementById('msgRecuperar');
+            const btn = document.getElementById('btnRecuperar'); const msg = document.getElementById('msgRecuperar');
             const cpf = document.getElementById('recupCpf').value.replace(/\D/g, '');
-
             btn.innerText = "Enviando..."; btn.disabled = true; msg.classList.add('hidden');
 
             try {
                 const response = await api.post('/api/auth/recuperar-senha/solicitar', { cpf });
                 if (response.data.sucesso) {
-                    msg.innerText = "Código enviado! Verifique seu WhatsApp.";
-                    msg.className = "text-center text-sm mt-2 text-green-500 font-bold block";
+                    msg.innerText = "Código enviado!"; msg.className = "text-center text-sm mt-2 text-green-500 font-bold block";
                     document.getElementById('confCpf').value = cpf;
-                    setTimeout(() => { 
-                        window.showConfirmar(); 
-                        msg.classList.add('hidden'); 
-                        btn.innerText = "Enviar Código"; btn.disabled = false;
-                    }, 2000);
+                    setTimeout(() => { window.showConfirmar(); msg.classList.add('hidden'); btn.innerText = "Enviar Código"; btn.disabled = false; }, 2000);
                 }
-            } catch (error) {
-                msg.innerText = error.response?.data?.erro || "Erro ao solicitar código.";
-                msg.className = "text-center text-sm mt-2 text-red-500 block";
-                btn.innerText = "Enviar Código"; btn.disabled = false;
-            }
+            } catch (error) { msg.innerText = "Erro ao solicitar."; msg.className = "text-center text-sm mt-2 text-red-500 block"; btn.innerText = "Enviar Código"; btn.disabled = false; }
         });
 
         // --- 3. CONFIRMAR ---
         document.getElementById('formConfirmar').addEventListener('submit', async (e) => {
             e.preventDefault();
-            const btn = document.getElementById('btnConfirmar');
-            const msg = document.getElementById('msgConfirmar');
+            const btn = document.getElementById('btnConfirmar'); const msg = document.getElementById('msgConfirmar');
             btn.innerText = "Alterando..."; btn.disabled = true; msg.classList.add('hidden');
 
-            const payload = {
-                cpf: document.getElementById('confCpf').value,
-                token: document.getElementById('confToken').value,
-                senha_nova: document.getElementById('confSenha').value
-            };
-
             try {
-                const response = await api.post('/api/auth/recuperar-senha/confirmar', payload);
-                if (response.data.sucesso) {
-                    msg.innerText = "Senha alterada! Faça login.";
-                    msg.className = "text-center text-sm mt-2 text-green-500 font-bold block";
+                const res = await api.post('/api/auth/recuperar-senha/confirmar', {
+                    cpf: document.getElementById('confCpf').value, token: document.getElementById('confToken').value, senha_nova: document.getElementById('confSenha').value
+                });
+                if (res.data.sucesso) {
+                    msg.innerText = "Senha alterada!"; msg.className = "text-center text-sm mt-2 text-green-500 font-bold block";
                     setTimeout(() => { window.location.reload(); }, 2000);
                 }
-            } catch (error) {
-                msg.innerText = error.response?.data?.erro || "Token inválido.";
-                msg.className = "text-center text-sm mt-2 text-red-500 block";
-                btn.innerText = "Alterar Senha"; btn.disabled = false;
-            }
+            } catch (error) { msg.innerText = "Token inválido."; msg.className = "text-center text-sm mt-2 text-red-500 block"; btn.innerText = "Alterar Senha"; btn.disabled = false; }
         });
     </script>
 </body>
