@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8"/>
     <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-    <title>Unidades - Admin</title>
+    <title>Barbeiros - Admin</title>
     
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
     <link href="https://fonts.googleapis.com/css2?family=Spline+Sans:wght@400;500;700&display=swap" rel="stylesheet"/>
@@ -55,8 +55,11 @@
             <a href="dashboard.html" class="flex items-center gap-3 px-4 py-3 text-gray-400 hover:text-white hover:bg-white/5 rounded-xl transition">
                 <span class="material-symbols-rounded">dashboard</span> Dashboard
             </a>
-            <a href="#" class="flex items-center gap-3 px-4 py-3 bg-brand-500/10 text-brand-500 font-bold rounded-xl transition">
+            <a href="unidades.html" class="flex items-center gap-3 px-4 py-3 text-gray-400 hover:text-white hover:bg-white/5 rounded-xl transition">
                 <span class="material-symbols-rounded">store</span> Unidades
+            </a>
+            <a href="#" class="flex items-center gap-3 px-4 py-3 bg-brand-500/10 text-brand-500 font-bold rounded-xl transition">
+                <span class="material-symbols-rounded">person</span> Barbeiros
             </a>
         </nav>
         <div class="p-4"><button onclick="window.location.href='index.html'" class="w-full py-2 text-red-400 text-sm hover:text-red-300">Sair</button></div>
@@ -66,7 +69,7 @@
         
         <header class="md:hidden h-16 bg-dark-800 border-b border-white/5 flex items-center justify-between px-4">
             <a href="dashboard.html" class="text-white"><span class="material-symbols-rounded">arrow_back</span></a>
-            <span class="font-bold">Gerenciar Unidades</span>
+            <span class="font-bold">Gerenciar Barbeiros</span>
             <div class="w-6"></div>
         </header>
 
@@ -74,46 +77,72 @@
             
             <div class="flex justify-between items-center mb-8">
                 <div>
-                    <h2 class="text-3xl font-bold text-white">Unidades</h2>
-                    <p class="text-gray-400 text-sm mt-1">Gerencie as filiais da barbearia.</p>
+                    <h2 class="text-3xl font-bold text-white">Equipe</h2>
+                    <p class="text-gray-400 text-sm mt-1">Gerencie profissionais, acessos e comissões.</p>
                 </div>
                 <button onclick="abrirModal()" class="bg-brand-500 hover:bg-brand-600 text-black font-bold py-2 px-4 rounded-xl flex items-center gap-2 transition shadow-lg shadow-brand-500/20">
-                    <span class="material-symbols-rounded">add</span> Nova Unidade
+                    <span class="material-symbols-rounded">person_add</span> Novo Barbeiro
                 </button>
             </div>
 
-            <div id="listaUnidades" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                <div class="glass h-40 rounded-2xl animate-pulse bg-white/5"></div>
+            <div id="listaBarbeiros" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                <div class="glass h-56 rounded-2xl animate-pulse bg-white/5"></div>
+                <div class="glass h-56 rounded-2xl animate-pulse bg-white/5"></div>
             </div>
 
         </div>
     </main>
 
-    <div id="modalUnidade" class="modal fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm">
-        <div class="modal-content glass w-full max-w-md p-6 rounded-2xl shadow-2xl border border-white/10 bg-dark-900">
+    <div id="modalBarbeiro" class="modal fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm">
+        <div class="modal-content glass w-full max-w-lg p-6 rounded-2xl shadow-2xl border border-white/10 bg-dark-900 overflow-y-auto max-h-[90vh]">
             <div class="flex justify-between items-center mb-6">
-                <h3 id="modalTitulo" class="text-xl font-bold text-white">Nova Unidade</h3>
+                <h3 id="modalTitulo" class="text-xl font-bold text-white">Novo Barbeiro</h3>
                 <button onclick="fecharModal()" class="text-gray-400 hover:text-white">
                     <span class="material-symbols-rounded">close</span>
                 </button>
             </div>
 
-            <form id="formUnidade" class="space-y-4">
-                <input type="hidden" id="unidadeId">
+            <form id="formBarbeiro" class="space-y-4">
+                <input type="hidden" id="barbeiroId">
 
-                <div>
-                    <label class="block text-xs text-gray-400 mb-1 uppercase">Nome da Unidade</label>
-                    <input id="nome" type="text" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:ring-2 focus:ring-brand-500 focus:border-transparent outline-none transition" placeholder="Ex: Barbearia Centro" required>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="md:col-span-2">
+                        <label class="block text-xs text-gray-400 mb-1 uppercase">Nome Completo</label>
+                        <input id="nome" type="text" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:ring-2 focus:ring-brand-500 outline-none" placeholder="Ex: João da Silva" required>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-xs text-gray-400 mb-1 uppercase">CPF</label>
+                        <input id="cpf" type="text" maxlength="14" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:ring-2 focus:ring-brand-500 outline-none" placeholder="000.000.000-00" required>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs text-gray-400 mb-1 uppercase">Telefone</label>
+                        <input id="telefone" type="tel" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:ring-2 focus:ring-brand-500 outline-none" placeholder="(27) 99999-9999" required>
+                    </div>
                 </div>
 
                 <div>
-                    <label class="block text-xs text-gray-400 mb-1 uppercase">Endereço Completo</label>
-                    <input id="endereco" type="text" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:ring-2 focus:ring-brand-500 focus:border-transparent outline-none transition" placeholder="Rua, Número, Bairro" required>
+                    <label class="block text-xs text-gray-400 mb-1 uppercase">Email (Login)</label>
+                    <input id="email" type="email" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:ring-2 focus:ring-brand-500 outline-none" placeholder="joao@email.com" required>
                 </div>
 
-                <div>
-                    <label class="block text-xs text-gray-400 mb-1 uppercase">Telefone</label>
-                    <input id="telefone" type="tel" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:ring-2 focus:ring-brand-500 focus:border-transparent outline-none transition" placeholder="(27) 99999-9999" required>
+                <div id="divSenha">
+                    <label class="block text-xs text-gray-400 mb-1 uppercase">Senha de Acesso</label>
+                    <input id="senha" type="password" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:ring-2 focus:ring-brand-500 outline-none" placeholder="******">
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs text-gray-400 mb-1 uppercase">Unidade</label>
+                        <select id="unidade_id" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:ring-2 focus:ring-brand-500 outline-none [&>option]:bg-dark-900" required>
+                            <option value="">Carregando unidades...</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs text-gray-400 mb-1 uppercase">Comissão (%)</label>
+                        <input id="percentual_comissao" type="number" step="0.1" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:ring-2 focus:ring-brand-500 outline-none" placeholder="Ex: 50" required>
+                    </div>
                 </div>
 
                 <div class="pt-4 flex gap-3">
@@ -125,122 +154,171 @@
     </div>
 
     <script type="module">
-        // ✅ IMPORTAÇÃO CORRETA: Usa o arquivo configurado na mesma pasta
         import api from './apibase.js';
 
-        // 1. FUNÇÕES VISUAIS (Janelas e Modais)
-        window.abrirModal = (id = null) => {
-            document.getElementById('modalUnidade').classList.add('open');
-            document.getElementById('unidadeId').value = id || '';
-            document.getElementById('modalTitulo').innerText = id ? 'Editar Unidade' : 'Nova Unidade';
-            if(!id) document.getElementById('formUnidade').reset();
-        };
+        // --- UTILITÁRIOS ---
+        const el = id => document.getElementById(id);
+        const container = el('listaBarbeiros');
+        
+        const maskCPF = (v) => v ? v.replace(/\D/g,'').replace(/(\d{3})(\d)/,'$1.$2').replace(/(\d{3})(\d)/,'$1.$2').replace(/(\d{3})(\d{1,2})/,'$1-$2').replace(/(-\d{2})\d+?$/, '$1') : "";
+        el('cpf').addEventListener('input', (e) => e.target.value = maskCPF(e.target.value));
 
-        window.fecharModal = () => document.getElementById('modalUnidade').classList.remove('open');
-
-        // 2. FUNÇÕES DE CRUD (Create, Read, Update, Delete)
-        const container = document.getElementById('listaUnidades');
-
-        // --- LISTAR UNIDADES ---
+        // --- 1. CARREGAR UNIDADES (API 5.2) ---
         async function carregarUnidades() {
             try {
-                // Chama a API através do arquivo importado
                 const res = await api.get('/api/unidades?ativo=true');
+                const select = el('unidade_id');
+                select.innerHTML = '<option value="">Selecione a Unidade</option>';
+                
+                if(res.data.sucesso && res.data.dados) {
+                    res.data.dados.forEach(u => {
+                        const opt = document.createElement('option');
+                        opt.value = u.id;
+                        opt.innerText = u.nome;
+                        select.appendChild(opt);
+                    });
+                }
+            } catch (e) { console.error("Erro Unidades", e); }
+        }
+
+        // --- 2. LISTAR BARBEIROS (GET /api/barbeiros) ---
+        async function carregarBarbeiros() {
+            try {
+                // Tenta buscar todos os barbeiros
+                // Se sua API não tiver /api/barbeiros, pode ser /api/usuarios?tipo=barbeiro
+                const res = await api.get('/api/barbeiros'); 
                 container.innerHTML = '';
 
                 if(res.data.sucesso && res.data.dados.length > 0) {
-                    res.data.dados.forEach(u => {
+                    res.data.dados.forEach(b => {
                         const card = document.createElement('div');
-                        card.className = 'glass p-6 rounded-2xl flex flex-col justify-between group hover:border-brand-500/50 transition duration-300';
+                        card.className = 'glass p-6 rounded-2xl flex flex-col items-center text-center group hover:border-brand-500/50 transition duration-300 relative';
+                        
                         card.innerHTML = `
-                            <div>
-                                <div class="flex justify-between items-start mb-4">
-                                    <div class="h-12 w-12 rounded-xl bg-brand-500/10 text-brand-500 flex items-center justify-center">
-                                        <span class="material-symbols-rounded text-2xl">storefront</span>
-                                    </div>
-                                    <div class="flex gap-2 opacity-0 group-hover:opacity-100 transition">
-                                        <button onclick="editar(${u.id})" class="text-gray-400 hover:text-white p-1"><span class="material-symbols-rounded">edit</span></button>
-                                        <button onclick="excluir(${u.id})" class="text-red-400 hover:text-red-300 p-1"><span class="material-symbols-rounded">delete</span></button>
-                                    </div>
-                                </div>
-                                <h3 class="text-xl font-bold text-white mb-1">${u.nome}</h3>
-                                <p class="text-gray-400 text-sm mb-4 line-clamp-2">${u.endereco}</p>
+                            <div class="absolute top-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition">
+                                <button onclick="editar(${b.id})" class="text-gray-400 hover:text-white"><span class="material-symbols-rounded">edit</span></button>
+                                <button onclick="excluir(${b.id})" class="text-red-400 hover:text-red-300"><span class="material-symbols-rounded">delete</span></button>
                             </div>
-                            <div class="pt-4 border-t border-white/5 flex items-center gap-2 text-sm text-brand-500">
-                                <span class="material-symbols-rounded text-base">call</span> ${u.telefone}
+
+                            <div class="h-20 w-20 rounded-full bg-gradient-to-br from-brand-500 to-brand-600 flex items-center justify-center text-black mb-4 shadow-lg shadow-brand-500/20">
+                                <span class="material-symbols-rounded text-4xl">person</span>
+                            </div>
+                            
+                            <h3 class="text-xl font-bold text-white">${b.nome}</h3>
+                            <p class="text-gray-400 text-xs mb-1">${b.email}</p>
+                            
+                            <div class="mt-4 w-full flex justify-between items-center bg-white/5 px-4 py-2 rounded-xl text-sm">
+                                <span class="text-brand-500 font-bold">${b.percentual_comissao}% Com.</span>
+                                <span class="text-gray-300 flex items-center gap-1">
+                                    <span class="material-symbols-rounded text-xs">store</span> ${b.unidade_nome || 'N/A'}
+                                </span>
                             </div>
                         `;
                         container.appendChild(card);
                     });
                 } else {
-                    container.innerHTML = '<p class="text-gray-500 col-span-3 text-center py-10">Nenhuma unidade cadastrada.</p>';
+                    container.innerHTML = '<p class="text-gray-500 col-span-3 text-center py-10">Nenhum barbeiro encontrado.</p>';
                 }
             } catch (error) {
+                container.innerHTML = '<p class="text-gray-500 col-span-3 text-center py-10">Erro ao carregar lista.</p>';
                 console.error(error);
-                container.innerHTML = '<p class="text-red-500 col-span-3 text-center">Erro ao carregar unidades.</p>';
             }
         }
 
-        // --- SALVAR (CRIAR/EDITAR) ---
-        document.getElementById('formUnidade').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const btn = document.getElementById('btnSalvar');
-            const id = document.getElementById('unidadeId').value;
+        // --- 3. MODAL ---
+        window.abrirModal = (id = null) => {
+            el('modalBarbeiro').classList.add('open');
+            el('barbeiroId').value = id || '';
+            el('modalTitulo').innerText = id ? 'Editar Barbeiro' : 'Novo Barbeiro';
             
-            const payload = {
-                nome: document.getElementById('nome').value,
-                endereco: document.getElementById('endereco').value,
-                telefone: document.getElementById('telefone').value.replace(/\D/g, '') // Limpa caracteres do telefone
-            };
+            // Se tem ID, esconde a senha (edição). Se não, mostra (criação).
+            el('divSenha').style.display = id ? 'none' : 'block';
+            el('senha').required = !id;
 
+            if(!id) {
+                el('formBarbeiro').reset();
+                carregarUnidades(); // Garante que o select esteja fresco
+            }
+        };
+
+        window.fecharModal = () => el('modalBarbeiro').classList.remove('open');
+
+        // --- 4. SALVAR (CREATE / UPDATE) ---
+        el('formBarbeiro').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = el('btnSalvar');
+            const id = el('barbeiroId').value;
             btn.innerText = "Salvando..."; btn.disabled = true;
+
+            // Prepara dados comuns
+            const payload = {
+                nome: el('nome').value,
+                cpf: el('cpf').value.replace(/\D/g, ''),
+                email: el('email').value,
+                telefone: el('telefone').value.replace(/\D/g, ''),
+                unidade_id: el('unidade_id').value,
+                percentual_comissao: parseFloat(el('percentual_comissao').value),
+                tipo: 'barbeiro' // Força o tipo
+            };
 
             try {
                 if (id) {
-                    await api.put(`/api/unidades/${id}`, { ...payload, ativo: true });
+                    // MODO EDIÇÃO: PUT /api/barbeiros/:id
+                    await api.put(`/api/barbeiros/${id}`, payload);
                 } else {
-                    await api.post('/api/unidades', payload);
+                    // MODO CRIAÇÃO: POST /api/auth/usuarios/registrar
+                    // É aqui que criamos o login junto com o perfil
+                    payload.senha = el('senha').value; // Adiciona senha apenas no create
+                    await api.post('/api/auth/usuarios/registrar', payload);
                 }
+                
                 fecharModal();
-                carregarUnidades();
+                carregarBarbeiros(); // Recarrega a lista
             } catch (error) {
-                alert("Erro ao salvar: " + (error.response?.data?.erro || error.message));
+                alert("Erro: " + (error.response?.data?.erro || error.message));
             } finally {
                 btn.innerText = "Salvar"; btn.disabled = false;
             }
         });
 
-        // --- PREPARAR EDIÇÃO ---
+        // --- 5. EDITAR (GET /api/barbeiros/:id) ---
         window.editar = async (id) => {
             try {
-                const res = await api.get(`/api/unidades/${id}`);
+                // Carrega unidades antes para preencher o select
+                await carregarUnidades();
+                
+                const res = await api.get(`/api/barbeiros/${id}`);
                 if(res.data.sucesso) {
-                    const u = res.data.dados;
+                    const b = res.data.dados;
                     abrirModal(id);
-                    document.getElementById('nome').value = u.nome;
-                    document.getElementById('endereco').value = u.endereco;
-                    document.getElementById('telefone').value = u.telefone;
+                    // Preenche o formulário
+                    el('nome').value = b.nome;
+                    el('cpf').value = maskCPF(b.cpf);
+                    el('email').value = b.email;
+                    el('telefone').value = b.telefone; // Máscara se necessário
+                    el('unidade_id').value = b.unidade_id;
+                    el('percentual_comissao').value = b.percentual_comissao;
                 }
-            } catch (error) {
-                alert("Erro ao carregar dados.");
-            }
+            } catch (error) { alert("Erro ao carregar dados."); }
         };
 
-        // --- EXCLUIR ---
+        // --- 6. EXCLUIR (DELETE /api/barbeiros/:id) ---
         window.excluir = async (id) => {
-            if(confirm("Tem certeza que deseja inativar esta unidade?")) {
+            if(confirm("Tem certeza? O acesso deste barbeiro será revogado.")) {
                 try {
-                    await api.delete(`/api/unidades/${id}`);
-                    carregarUnidades();
-                } catch (error) {
-                    alert("Erro ao excluir.");
-                }
+                    await api.delete(`/api/barbeiros/${id}`);
+                    carregarBarbeiros();
+                } catch (error) { alert("Erro ao excluir."); }
             }
         };
 
-        // Inicializa a página
+        // INICIALIZAÇÃO
         carregarUnidades();
+        carregarBarbeiros();
 
+        // Expõe funções globais
+        window.editar = editar;
+        window.excluir = excluir;
     </script>
 </body>
 </html>
