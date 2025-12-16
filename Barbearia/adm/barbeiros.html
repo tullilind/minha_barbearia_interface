@@ -3,10 +3,10 @@
 <head>
     <meta charset="utf-8"/>
     <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-    <title>Barbeiros - Admin</title>
+    <title>Clientes - Gestão Admin</title>
     
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Spline+Sans:wght@400;500;700&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Spline+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,1,0" rel="stylesheet"/>
     
     <script>
@@ -15,10 +15,20 @@
             theme: {
                 extend: {
                     colors: {
-                        brand: { 500: '#d4af37', 600: '#b5952f' },
-                        dark: { 900: '#050505', 800: '#0a0a0a', 700: '#121212', surface: '#1E1E1E' }
+                        brand: { 500: '#d4af37', 600: '#b5952f' }, // Dourado Premium
+                        dark: { 900: '#050505', 800: '#0a0a0a', 700: '#121212', 600: '#1e1e1e' },
+                        success: '#10b981',
+                        danger: '#ef4444'
                     },
-                    fontFamily: { sans: ['Spline Sans', 'sans-serif'] }
+                    fontFamily: { sans: ['Spline Sans', 'sans-serif'] },
+                    animation: {
+                        'fade-in': 'fadeIn 0.5s ease-out',
+                        'slide-up': 'slideUp 0.4s ease-out'
+                    },
+                    keyframes: {
+                        fadeIn: { '0%': { opacity: '0' }, '100%': { opacity: '1' } },
+                        slideUp: { '0%': { transform: 'translateY(20px)', opacity: '0' }, '100%': { transform: 'translateY(0)', opacity: '1' } }
+                    }
                 }
             }
         };
@@ -29,12 +39,37 @@
     </script>
 
     <style>
-        body { background-color: #050505; color: white; }
-        .glass { background: rgba(30, 30, 30, 0.6); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.05); }
-        .modal { transition: opacity 0.3s ease; opacity: 0; pointer-events: none; }
-        .modal.open { opacity: 1; pointer-events: auto; }
-        .modal-content { transform: scale(0.95); transition: transform 0.3s ease; }
-        .modal.open .modal-content { transform: scale(1); }
+        body { background-color: #050505; color: #e5e5e5; }
+        
+        /* Efeito de Vidro */
+        .glass { 
+            background: rgba(30, 30, 30, 0.4); 
+            backdrop-filter: blur(12px); 
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255,255,255,0.05); 
+        }
+        
+        .glass-hover:hover {
+            background: rgba(255, 255, 255, 0.03);
+            border-color: rgba(212, 175, 55, 0.3);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px -10px rgba(0,0,0,0.5);
+        }
+
+        /* Scrollbar Fina e Escura */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #0a0a0a; }
+        ::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: #d4af37; }
+
+        /* Modal Animation */
+        .modal { transition: opacity 0.3s ease, visibility 0.3s ease; opacity: 0; visibility: hidden; pointer-events: none; }
+        .modal.open { opacity: 1; visibility: visible; pointer-events: auto; }
+        .modal-content { transform: scale(0.95) translateY(10px); transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
+        .modal.open .modal-content { transform: scale(1) translateY(0); }
+
+        /* Avatar com Gradiente */
+        .avatar-gradient { background: linear-gradient(135deg, #333 0%, #111 100%); }
     </style>
 
     <script>
@@ -42,317 +77,428 @@
     </script>
 </head>
 
-<body class="flex h-screen overflow-hidden font-sans">
+<body class="flex h-screen overflow-hidden font-sans selection:bg-brand-500 selection:text-black">
 
-    <aside class="hidden md:flex w-72 bg-dark-800 border-r border-white/5 flex-col z-20">
-        <div class="p-8 border-b border-white/5 flex items-center gap-3">
-            <div class="h-10 w-10 rounded-xl bg-gradient-to-br from-brand-500 to-brand-600 flex items-center justify-center text-black shadow-lg">
-                <span class="material-symbols-rounded">content_cut</span>
+    <aside class="hidden md:flex w-72 bg-dark-800 border-r border-white/5 flex-col z-20 shadow-2xl">
+        <div class="p-8 border-b border-white/5 flex items-center gap-4">
+            <div class="h-12 w-12 rounded-xl bg-gradient-to-br from-brand-500 to-brand-600 flex items-center justify-center text-black shadow-lg shadow-brand-500/20">
+                <span class="material-symbols-rounded text-2xl">content_cut</span>
             </div>
-            <h1 class="font-bold text-lg">Barbearia</h1>
+            <div>
+                <h1 class="font-bold text-xl tracking-tight text-white">Barbearia</h1>
+                <p class="text-xs text-brand-500 font-medium tracking-widest uppercase">Admin Panel</p>
+            </div>
         </div>
         
-        <nav class="flex-1 p-4 space-y-2 overflow-y-auto">
-            <p class="px-4 text-xs font-bold text-gray-600 uppercase tracking-wider mb-2 mt-4">Principal</p>
-            <a href="dashboard.html" class="flex items-center gap-3 px-4 py-3 text-gray-400 hover:text-white hover:bg-white/5 rounded-xl transition">
+        <nav class="flex-1 p-4 space-y-2 overflow-y-auto custom-scroll">
+            <p class="px-4 text-xs font-bold text-gray-600 uppercase tracking-wider mb-2 mt-4">Visão Geral</p>
+            <a href="dashboard.html" class="flex items-center gap-3 px-4 py-3 text-gray-400 hover:text-white hover:bg-white/5 rounded-xl transition duration-200">
                 <span class="material-symbols-rounded">dashboard</span> Dashboard
             </a>
 
             <p class="px-4 text-xs font-bold text-gray-600 uppercase tracking-wider mb-2 mt-6">Gestão</p>
-            <a href="unidades.html" class="flex items-center gap-3 px-4 py-3 text-gray-400 hover:text-white hover:bg-white/5 rounded-xl transition">
+            <a href="unidades.html" class="flex items-center gap-3 px-4 py-3 text-gray-400 hover:text-white hover:bg-white/5 rounded-xl transition duration-200">
                 <span class="material-symbols-rounded">store</span> Unidades
             </a>
-            <a href="#" class="flex items-center gap-3 px-4 py-3 bg-brand-500/10 text-brand-500 font-bold rounded-xl transition shadow-sm border border-brand-500/20">
+            <a href="barbeiros.html" class="flex items-center gap-3 px-4 py-3 text-gray-400 hover:text-white hover:bg-white/5 rounded-xl transition duration-200">
                 <span class="material-symbols-rounded">person</span> Barbeiros
             </a>
-            <a href="clientes.html" class="flex items-center gap-3 px-4 py-3 text-gray-400 hover:text-white hover:bg-white/5 rounded-xl transition">
-                <span class="material-symbols-rounded">group</span> Clientes
+            
+            <a href="#" class="flex items-center gap-3 px-4 py-3 bg-brand-500/10 text-brand-500 font-bold rounded-xl transition shadow-sm border border-brand-500/20 relative overflow-hidden group">
+                <div class="absolute inset-0 bg-brand-500/5 translate-x-[-100%] group-hover:translate-x-0 transition-transform duration-500"></div>
+                <span class="material-symbols-rounded relative z-10">group</span> 
+                <span class="relative z-10">Clientes</span>
             </a>
 
             <p class="px-4 text-xs font-bold text-gray-600 uppercase tracking-wider mb-2 mt-6">Financeiro</p>
-            <a href="vendas.html" class="flex items-center gap-3 px-4 py-3 text-gray-400 hover:text-white hover:bg-white/5 rounded-xl transition">
+            <a href="vendas.html" class="flex items-center gap-3 px-4 py-3 text-gray-400 hover:text-white hover:bg-white/5 rounded-xl transition duration-200">
                 <span class="material-symbols-rounded">payments</span> Vendas
             </a>
-            <a href="agendamentos.html" class="flex items-center gap-3 px-4 py-3 text-gray-400 hover:text-white hover:bg-white/5 rounded-xl transition">
+            <a href="agendamentos.html" class="flex items-center gap-3 px-4 py-3 text-gray-400 hover:text-white hover:bg-white/5 rounded-xl transition duration-200">
                 <span class="material-symbols-rounded">calendar_month</span> Agendamentos
             </a>
         </nav>
 
         <div class="p-4 border-t border-white/5">
-            <button onclick="window.location.href='index.html'" class="w-full py-3 flex items-center justify-center gap-2 text-red-400 text-sm hover:bg-red-500/10 rounded-xl transition">
-                <span class="material-symbols-rounded">logout</span> Sair
+            <button onclick="window.location.href='index.html'" class="w-full py-3 flex items-center justify-center gap-2 text-red-400 text-sm hover:bg-red-500/10 rounded-xl transition group">
+                <span class="material-symbols-rounded group-hover:-translate-x-1 transition-transform">logout</span> Sair do Sistema
             </button>
         </div>
     </aside>
 
     <main class="flex-1 flex flex-col h-screen overflow-hidden relative bg-dark-900">
         
-        <header class="md:hidden h-16 bg-dark-800 border-b border-white/5 flex items-center justify-between px-4">
-            <a href="dashboard.html" class="text-white"><span class="material-symbols-rounded">arrow_back</span></a>
-            <span class="font-bold">Gerenciar Barbeiros</span>
-            <div class="w-6"></div>
+        <header class="md:hidden h-16 bg-dark-800 border-b border-white/5 flex items-center justify-between px-4 z-30">
+            <a href="dashboard.html" class="text-white p-2 rounded-lg hover:bg-white/10"><span class="material-symbols-rounded">arrow_back</span></a>
+            <span class="font-bold text-lg">Gerenciar Clientes</span>
+            <div class="w-8"></div>
         </header>
 
-        <div class="flex-1 overflow-y-auto p-4 md:p-8">
+        <div class="flex-1 overflow-y-auto p-4 md:p-8 relative">
             
-            <div class="flex justify-between items-center mb-8">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4 animate-fade-in">
                 <div>
-                    <h2 class="text-3xl font-bold text-white">Barbeiros</h2>
-                    <p class="text-gray-400 text-sm mt-1">Gerencie sua equipe e comissões.</p>
+                    <h2 class="text-3xl font-bold text-white tracking-tight">Clientes</h2>
+                    <p class="text-gray-400 text-sm mt-1 flex items-center gap-2">
+                        <span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
+                        Gestão da base de consumidores
+                    </p>
                 </div>
-                <button onclick="abrirModal()" class="bg-brand-500 hover:bg-brand-600 text-black font-bold py-2 px-4 rounded-xl flex items-center gap-2 transition shadow-lg shadow-brand-500/20 active:scale-95">
-                    <span class="material-symbols-rounded">person_add</span> Novo Barbeiro
-                </button>
+                
+                <div class="flex items-center gap-3 w-full md:w-auto">
+                    <div class="relative w-full md:w-64 group">
+                        <span class="absolute left-3 top-2.5 text-gray-500 group-focus-within:text-brand-500 transition-colors material-symbols-rounded text-lg">search</span>
+                        <input id="searchCliente" type="text" class="w-full bg-dark-800 border border-white/10 rounded-xl pl-10 pr-4 py-2.5 text-sm text-white focus:ring-2 focus:ring-brand-500 focus:border-transparent outline-none transition placeholder-gray-600" placeholder="Buscar por nome...">
+                    </div>
+
+                    <button onclick="abrirModal()" class="bg-brand-500 hover:bg-brand-600 text-dark-900 font-bold py-2.5 px-5 rounded-xl flex items-center gap-2 transition shadow-lg shadow-brand-500/20 active:scale-95 whitespace-nowrap">
+                        <span class="material-symbols-rounded">person_add</span> 
+                        <span class="hidden md:inline">Novo Cliente</span>
+                    </button>
+                </div>
             </div>
 
-            <div id="listaBarbeiros" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                <div class="glass h-64 rounded-2xl animate-pulse bg-white/5"></div>
-                <div class="glass h-64 rounded-2xl animate-pulse bg-white/5"></div>
+            <div id="listaClientes" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 animate-slide-up">
+                
+                <div class="glass p-6 rounded-2xl animate-pulse">
+                    <div class="flex items-center gap-4 mb-4">
+                        <div class="h-14 w-14 rounded-full bg-white/5"></div>
+                        <div class="flex-1">
+                            <div class="h-4 bg-white/5 rounded w-3/4 mb-2"></div>
+                            <div class="h-3 bg-white/5 rounded w-1/2"></div>
+                        </div>
+                    </div>
+                    <div class="h-10 bg-white/5 rounded-xl w-full"></div>
+                </div>
+                <div class="glass p-6 rounded-2xl animate-pulse delay-100">
+                    <div class="flex items-center gap-4 mb-4">
+                        <div class="h-14 w-14 rounded-full bg-white/5"></div>
+                        <div class="flex-1">
+                            <div class="h-4 bg-white/5 rounded w-3/4 mb-2"></div>
+                            <div class="h-3 bg-white/5 rounded w-1/2"></div>
+                        </div>
+                    </div>
+                    <div class="h-10 bg-white/5 rounded-xl w-full"></div>
+                </div>
+                <div class="glass p-6 rounded-2xl animate-pulse delay-200">
+                    <div class="flex items-center gap-4 mb-4">
+                        <div class="h-14 w-14 rounded-full bg-white/5"></div>
+                        <div class="flex-1">
+                            <div class="h-4 bg-white/5 rounded w-3/4 mb-2"></div>
+                            <div class="h-3 bg-white/5 rounded w-1/2"></div>
+                        </div>
+                    </div>
+                    <div class="h-10 bg-white/5 rounded-xl w-full"></div>
+                </div>
+
+            </div>
+
+            <div id="loadingMore" class="hidden text-center py-8">
+                <span class="material-symbols-rounded animate-spin text-brand-500 text-3xl">progress_activity</span>
             </div>
 
         </div>
     </main>
 
-    <div id="modalBarbeiro" class="modal fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm">
-        <div class="modal-content glass w-full max-w-lg p-6 rounded-2xl shadow-2xl border border-white/10 bg-dark-900 overflow-y-auto max-h-[90vh]">
-            <div class="flex justify-between items-center mb-6">
-                <h3 id="modalTitulo" class="text-xl font-bold text-white">Novo Barbeiro</h3>
-                <button onclick="fecharModal()" class="text-gray-400 hover:text-white">
-                    <span class="material-symbols-rounded">close</span>
+    <div id="modalCliente" class="modal fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
+        <div class="modal-content glass w-full max-w-lg p-0 rounded-3xl shadow-2xl border border-white/10 bg-dark-900 overflow-hidden flex flex-col max-h-[90vh]">
+            
+            <div class="p-6 border-b border-white/5 flex justify-between items-center bg-dark-800/50">
+                <div>
+                    <h3 id="modalTitulo" class="text-xl font-bold text-white">Novo Cliente</h3>
+                    <p class="text-xs text-gray-400 mt-0.5">Preencha os dados cadastrais.</p>
+                </div>
+                <button onclick="fecharModal()" class="h-8 w-8 rounded-full bg-white/5 flex items-center justify-center text-gray-400 hover:text-white hover:bg-white/10 transition">
+                    <span class="material-symbols-rounded text-lg">close</span>
                 </button>
             </div>
 
-            <form id="formBarbeiro" class="space-y-4">
-                <input type="hidden" id="barbeiroId">
-
-                <div class="flex justify-center mb-4">
-                    <div class="h-24 w-24 rounded-full bg-white/5 border border-white/10 flex items-center justify-center relative overflow-hidden group cursor-pointer">
-                        <span class="material-symbols-rounded text-3xl text-gray-500 group-hover:text-brand-500 transition">add_a_photo</span>
-                        <input type="hidden" id="foto_base64"> </div>
-                </div>
-
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div class="md:col-span-2">
-                        <label class="block text-xs text-gray-400 mb-1 uppercase tracking-wider">Nome Completo</label>
-                        <input id="nome" type="text" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:ring-2 focus:ring-brand-500 focus:border-transparent outline-none transition" placeholder="Ex: Carlos Barbeiro" required>
-                    </div>
-                    
-                    <div>
-                        <label class="block text-xs text-gray-400 mb-1 uppercase tracking-wider">CPF</label>
-                        <input id="cpf" type="text" maxlength="14" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:ring-2 focus:ring-brand-500 focus:border-transparent outline-none transition" placeholder="000.000.000-00" required>
+            <div class="p-6 overflow-y-auto custom-scroll">
+                <form id="formCliente" class="space-y-5">
+                    <input type="hidden" id="clienteId"> <div class="group">
+                        <label class="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1.5 group-focus-within:text-brand-500 transition-colors">Nome Completo</label>
+                        <div class="relative">
+                            <span class="absolute left-3 top-3 text-gray-500 material-symbols-rounded text-lg group-focus-within:text-brand-500 transition-colors">person</span>
+                            <input id="nome" type="text" class="w-full bg-dark-800 border border-white/10 rounded-xl pl-10 pr-4 py-3 text-white focus:ring-2 focus:ring-brand-500 focus:border-transparent outline-none transition placeholder-gray-600" placeholder="Ex: Maria Oliveira" required>
+                        </div>
                     </div>
 
-                    <div>
-                        <label class="block text-xs text-gray-400 mb-1 uppercase tracking-wider">Telefone</label>
-                        <input id="telefone" type="tel" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:ring-2 focus:ring-brand-500 focus:border-transparent outline-none transition" placeholder="(27) 99999-9999" required>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="group">
+                            <label class="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1.5 group-focus-within:text-brand-500 transition-colors">CPF</label>
+                            <div class="relative">
+                                <span class="absolute left-3 top-3 text-gray-500 material-symbols-rounded text-lg group-focus-within:text-brand-500 transition-colors">badge</span>
+                                <input id="cpf" type="text" maxlength="14" class="w-full bg-dark-800 border border-white/10 rounded-xl pl-10 pr-4 py-3 text-white focus:ring-2 focus:ring-brand-500 focus:border-transparent outline-none transition placeholder-gray-600" placeholder="000.000.000-00" required>
+                            </div>
+                        </div>
+
+                        <div class="group">
+                            <label class="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1.5 group-focus-within:text-brand-500 transition-colors">Telefone / WhatsApp</label>
+                            <div class="relative">
+                                <span class="absolute left-3 top-3 text-gray-500 material-symbols-rounded text-lg group-focus-within:text-brand-500 transition-colors">call</span>
+                                <input id="telefone" type="tel" class="w-full bg-dark-800 border border-white/10 rounded-xl pl-10 pr-4 py-3 text-white focus:ring-2 focus:ring-brand-500 focus:border-transparent outline-none transition placeholder-gray-600" placeholder="(27) 99999-9999" required>
+                            </div>
+                        </div>
                     </div>
-                </div>
 
-                <div>
-                    <label class="block text-xs text-gray-400 mb-1 uppercase tracking-wider">Email (Login)</label>
-                    <input id="email" type="email" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:ring-2 focus:ring-brand-500 focus:border-transparent outline-none transition" placeholder="carlos@email.com" required>
-                </div>
-
-                <div id="divSenha">
-                    <label class="block text-xs text-gray-400 mb-1 uppercase tracking-wider">Senha Inicial</label>
-                    <input id="senha" type="password" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:ring-2 focus:ring-brand-500 focus:border-transparent outline-none transition" placeholder="******">
-                </div>
-
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-xs text-gray-400 mb-1 uppercase tracking-wider">Unidade</label>
-                        <select id="unidade_id" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:ring-2 focus:ring-brand-500 focus:border-transparent outline-none transition [&>option]:bg-dark-900" required>
-                            <option value="">Carregando...</option>
-                        </select>
+                    <div class="group">
+                        <label class="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1.5 group-focus-within:text-brand-500 transition-colors">Email</label>
+                        <div class="relative">
+                            <span class="absolute left-3 top-3 text-gray-500 material-symbols-rounded text-lg group-focus-within:text-brand-500 transition-colors">mail</span>
+                            <input id="email" type="email" class="w-full bg-dark-800 border border-white/10 rounded-xl pl-10 pr-4 py-3 text-white focus:ring-2 focus:ring-brand-500 focus:border-transparent outline-none transition placeholder-gray-600" placeholder="cliente@email.com" required>
+                        </div>
                     </div>
-                    <div>
-                        <label class="block text-xs text-gray-400 mb-1 uppercase tracking-wider">Comissão (%)</label>
-                        <input id="percentual_comissao" type="number" step="0.1" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:ring-2 focus:ring-brand-500 focus:border-transparent outline-none transition" placeholder="Ex: 50" required>
-                    </div>
-                </div>
 
-                <div class="pt-4 flex gap-3">
-                    <button type="button" onclick="fecharModal()" class="flex-1 py-3 rounded-xl border border-white/10 text-gray-300 hover:bg-white/5 transition">Cancelar</button>
-                    <button type="submit" id="btnSalvar" class="flex-1 py-3 rounded-xl bg-brand-500 text-black font-bold hover:bg-brand-600 transition shadow-lg">Salvar</button>
-                </div>
-            </form>
+                    <div id="divSenha" class="group transition-all duration-300">
+                        <label class="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1.5 group-focus-within:text-brand-500 transition-colors">Senha de Acesso</label>
+                        <div class="relative">
+                            <span class="absolute left-3 top-3 text-gray-500 material-symbols-rounded text-lg group-focus-within:text-brand-500 transition-colors">lock</span>
+                            <input id="senha" type="password" class="w-full bg-dark-800 border border-white/10 rounded-xl pl-10 pr-4 py-3 text-white focus:ring-2 focus:ring-brand-500 focus:border-transparent outline-none transition placeholder-gray-600" placeholder="Mínimo 6 caracteres">
+                        </div>
+                        <p class="text-[10px] text-gray-500 mt-1 ml-1">* Necessário para o cliente logar no App.</p>
+                    </div>
+
+                    <div class="pt-4 flex gap-3">
+                        <button type="button" onclick="fecharModal()" class="flex-1 py-3.5 rounded-xl border border-white/10 text-gray-300 font-medium hover:bg-white/5 hover:text-white transition active:scale-95">
+                            Cancelar
+                        </button>
+                        <button type="submit" id="btnSalvar" class="flex-1 py-3.5 rounded-xl bg-gradient-to-r from-brand-500 to-brand-600 text-black font-bold hover:shadow-lg hover:shadow-brand-500/20 transition transform active:scale-95 flex items-center justify-center gap-2">
+                            <span class="material-symbols-rounded">save</span>
+                            Salvar Cliente
+                        </button>
+                    </div>
+                </form>
+            </div>
         </div>
     </div>
 
     <script type="module">
-        // ✅ IMPORTAÇÃO DA API
+        // ✅ Importação correta do arquivo de configuração (mesma pasta)
         import api from './apibase.js';
 
-        // 1. UTILITÁRIOS
-        const el = id => document.getElementById(id);
-        const container = el('listaBarbeiros');
+        // --- REFERÊNCIAS DOM ---
+        const container = document.getElementById('listaClientes');
+        const inputBusca = document.getElementById('searchCliente');
+        let searchTimeout; // Para o debounce da busca
+
+        // --- 1. MÁSCARAS E UTILITÁRIOS ---
         
-        const maskCPF = (v) => v ? v.replace(/\D/g,'').replace(/(\d{3})(\d)/,'$1.$2').replace(/(\d{3})(\d)/,'$1.$2').replace(/(\d{3})(\d{1,2})/,'$1-$2').replace(/(-\d{2})\d+?$/, '$1') : "";
-        el('cpf').addEventListener('input', (e) => e.target.value = maskCPF(e.target.value));
+        // Máscara CPF: 000.000.000-00
+        const maskCPF = (v) => v.replace(/\D/g,'').replace(/(\d{3})(\d)/,'$1.$2').replace(/(\d{3})(\d)/,'$1.$2').replace(/(\d{3})(\d{1,2})/,'$1-$2').replace(/(-\d{2})\d+?$/, '$1');
+        
+        // Máscara Telefone: (00) 00000-0000
+        const maskPhone = (v) => {
+            v = v.replace(/\D/g, "");
+            v = v.replace(/^(\d{2})(\d)/g, "($1) $2");
+            v = v.replace(/(\d)(\d{4})$/, "$1-$2");
+            return v;
+        };
 
-        // 2. FUNÇÕES VISUAIS
+        // Aplica máscaras nos inputs do modal
+        document.getElementById('cpf').addEventListener('input', (e) => e.target.value = maskCPF(e.target.value));
+        document.getElementById('telefone').addEventListener('input', (e) => e.target.value = maskPhone(e.target.value));
+
+        // --- 2. FUNÇÕES VISUAIS (MODAL) ---
+        
         window.abrirModal = (id = null) => {
-            el('modalBarbeiro').classList.add('open');
-            el('barbeiroId').value = id || '';
-            el('modalTitulo').innerText = id ? 'Editar Barbeiro' : 'Novo Barbeiro';
-            
-            // Se tem ID (Edição), esconde a senha e desabilita campos que não podem mudar fácil (CPF/Email)
-            el('divSenha').style.display = id ? 'none' : 'block';
-            el('senha').required = !id;
-            
-            // Opcional: Bloquear CPF na edição se a API não permitir mudar
-            el('cpf').disabled = !!id; 
+            const modal = document.getElementById('modalCliente');
+            const titulo = document.getElementById('modalTitulo');
+            const form = document.getElementById('formCliente');
+            const divSenha = document.getElementById('divSenha');
+            const inputId = document.getElementById('clienteId');
 
-            if(!id) {
-                el('formBarbeiro').reset();
-                carregarUnidadesNoSelect(); // Recarrega unidades fresco
+            modal.classList.add('open');
+            inputId.value = id || '';
+            titulo.innerText = id ? 'Editar Cliente' : 'Novo Cliente';
+            
+            // Lógica de Senha: Se for edição, esconde. Se for novo, mostra.
+            if(id) {
+                divSenha.style.display = 'none';
+                document.getElementById('senha').required = false;
+                document.getElementById('cpf').disabled = true; // Geralmente não se edita CPF
+            } else {
+                divSenha.style.display = 'block';
+                document.getElementById('senha').required = true;
+                document.getElementById('cpf').disabled = false;
+                form.reset();
             }
         };
 
-        window.fecharModal = () => el('modalBarbeiro').classList.remove('open');
+        window.fecharModal = () => document.getElementById('modalCliente').classList.remove('open');
 
-        // 3. CARREGAR UNIDADES (API 5.2) -> Para o Select
-        async function carregarUnidadesNoSelect() {
+        // --- 3. CRUD: LISTAR CLIENTES (API 11.5) ---
+        
+        async function carregarClientes(termo = '') {
             try {
-                const res = await api.get('/api/unidades?ativo=true');
-                const select = el('unidade_id');
-                select.innerHTML = '<option value="">Selecione a Unidade</option>';
+                // Monta URL com busca se houver termo
+                const url = termo ? `/api/clientes?nome=${termo}&ativo=true` : '/api/clientes?ativo=true';
                 
-                if(res.data.sucesso && res.data.dados) {
-                    res.data.dados.forEach(u => {
-                        const opt = document.createElement('option');
-                        opt.value = u.id;
-                        opt.innerText = u.nome;
-                        select.appendChild(opt);
-                    });
-                }
-            } catch (e) { console.error("Erro Unidades", e); }
-        }
-
-        // 4. LISTAR BARBEIROS (API 11.1)
-        async function carregarBarbeiros() {
-            try {
-                // Chama a API 11.1
-                const res = await api.get('/api/barbeiros?ativo=true'); 
-                container.innerHTML = '';
+                // Se for a primeira carga sem busca, mostra skeleton (já está no HTML).
+                // Se for busca, podemos colocar um loader simples.
+                
+                const res = await api.get(url);
+                container.innerHTML = ''; // Limpa
 
                 if(res.data.sucesso && res.data.dados.length > 0) {
-                    res.data.dados.forEach(b => {
-                        const card = document.createElement('div');
-                        card.className = 'glass p-6 rounded-2xl flex flex-col items-center text-center group hover:border-brand-500/50 transition duration-300 relative overflow-hidden';
+                    res.data.dados.forEach(c => {
+                        // Gera iniciais para o avatar
+                        const iniciais = c.nome.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
                         
-                        // Ações (Editar/Excluir)
-                        const botoes = `
-                            <div class="absolute top-4 right-4 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-black/50 rounded-lg p-1 backdrop-blur-md">
-                                <button onclick="editar(${b.id})" class="p-1.5 text-gray-300 hover:text-white hover:bg-white/10 rounded-md"><span class="material-symbols-rounded text-lg">edit</span></button>
-                                <button onclick="excluir(${b.id})" class="p-1.5 text-red-400 hover:text-red-300 hover:bg-red-500/10 rounded-md"><span class="material-symbols-rounded text-lg">delete</span></button>
-                            </div>
-                        `;
+                        // Link WhatsApp Limpo
+                        const zapLink = `https://wa.me/55${c.telefone.replace(/\D/g, '')}`;
 
-                        // Avatar (Se tiver foto base64 usa ela, senão usa ícone)
-                        const avatar = b.foto_base64 
-                            ? `<img src="${b.foto_base64}" class="h-20 w-20 rounded-full object-cover mb-4 border-2 border-brand-500/50">`
-                            : `<div class="h-20 w-20 rounded-full bg-gradient-to-br from-brand-500 to-brand-600 flex items-center justify-center text-black mb-4 shadow-lg"><span class="material-symbols-rounded text-4xl">person</span></div>`;
-
+                        const card = document.createElement('div');
+                        card.className = 'glass p-6 rounded-2xl flex flex-col justify-between group hover:border-brand-500/50 transition duration-300 relative overflow-hidden glass-hover animate-fade-in';
+                        
                         card.innerHTML = `
-                            ${botoes}
-                            ${avatar}
-                            
-                            <h3 class="text-xl font-bold text-white mb-1">${b.nome}</h3>
-                            <p class="text-gray-400 text-xs mb-4">${b.telefone}</p>
-                            
-                            <div class="w-full flex justify-between items-center bg-white/5 px-4 py-2 rounded-xl text-sm border border-white/5">
-                                <span class="text-brand-500 font-bold">${b.percentual_comissao}% Com.</span>
-                                <span class="text-gray-300 text-xs opacity-50">ID: ${b.id}</span>
+                            <div class="absolute top-4 right-4 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-black/60 rounded-lg p-1 backdrop-blur-md z-10">
+                                <button onclick="editar(${c.id})" class="p-2 text-gray-300 hover:text-white hover:bg-white/10 rounded-md transition" title="Editar">
+                                    <span class="material-symbols-rounded text-lg">edit</span>
+                                </button>
+                                <button onclick="excluir(${c.id})" class="p-2 text-red-400 hover:text-red-300 hover:bg-red-500/10 rounded-md transition" title="Inativar">
+                                    <span class="material-symbols-rounded text-lg">delete</span>
+                                </button>
+                            </div>
+
+                            <div class="flex items-center gap-4 mb-4">
+                                <div class="h-14 w-14 rounded-full avatar-gradient border border-white/10 flex items-center justify-center shrink-0 shadow-lg">
+                                    <span class="font-bold text-lg text-brand-500 tracking-wider">${iniciais}</span>
+                                </div>
+                                
+                                <div class="overflow-hidden">
+                                    <h3 class="text-lg font-bold text-white truncate leading-tight">${c.nome}</h3>
+                                    <p class="text-gray-500 text-xs mt-0.5 truncate">${c.email || 'Sem e-mail'}</p>
+                                </div>
+                            </div>
+
+                            <div class="space-y-2 mt-2">
+                                <div class="flex items-center gap-2 text-sm text-gray-400 bg-white/5 p-2 rounded-lg">
+                                    <span class="material-symbols-rounded text-base text-brand-500 opacity-80">badge</span>
+                                    <span class="tracking-wide">${maskCPF(c.cpf)}</span>
+                                </div>
+                                
+                                <a href="${zapLink}" target="_blank" class="flex items-center gap-2 text-sm text-gray-400 bg-white/5 p-2 rounded-lg hover:bg-green-500/10 hover:text-green-400 transition cursor-pointer">
+                                    <span class="material-symbols-rounded text-base text-green-500 opacity-80">chat</span>
+                                    <span class="tracking-wide">${maskPhone(c.telefone)}</span>
+                                </a>
                             </div>
                         `;
                         container.appendChild(card);
                     });
                 } else {
-                    container.innerHTML = '<div class="col-span-3 text-center py-20 opacity-50"><span class="material-symbols-rounded text-4xl mb-2">person_off</span><p>Nenhum barbeiro cadastrado.</p></div>';
+                    container.innerHTML = `
+                        <div class="col-span-1 md:col-span-2 xl:col-span-3 text-center py-20 opacity-50 flex flex-col items-center animate-fade-in">
+                            <div class="h-20 w-20 bg-white/5 rounded-full flex items-center justify-center mb-4">
+                                <span class="material-symbols-rounded text-4xl text-gray-500">person_off</span>
+                            </div>
+                            <p class="text-lg font-medium text-gray-300">Nenhum cliente encontrado.</p>
+                            <p class="text-sm text-gray-500">Tente buscar por outro nome ou cadastre um novo.</p>
+                        </div>`;
                 }
             } catch (error) {
                 console.error(error);
-                container.innerHTML = '<p class="text-red-500 col-span-3 text-center">Erro ao carregar lista.</p>';
+                container.innerHTML = '<p class="text-red-500 col-span-3 text-center py-10">Erro de conexão ao carregar clientes.</p>';
             }
         }
 
-        // 5. SALVAR (API Auth p/ Criar ou API 11.3 p/ Editar)
-        el('formBarbeiro').addEventListener('submit', async (e) => {
+        // --- 4. CRUD: SALVAR (CRIAR / EDITAR) ---
+        
+        document.getElementById('formCliente').addEventListener('submit', async (e) => {
             e.preventDefault();
-            const btn = el('btnSalvar');
-            const id = el('barbeiroId').value;
-            btn.innerText = "Salvando..."; btn.disabled = true;
+            const btn = document.getElementById('btnSalvar');
+            const originalText = btn.innerHTML;
+            const id = document.getElementById('clienteId').value;
+            
+            // Desabilita botão e mostra loading
+            btn.innerHTML = '<span class="material-symbols-rounded animate-spin text-lg">progress_activity</span> Processando...';
+            btn.disabled = true;
+            btn.classList.add('opacity-70');
 
-            // Dados comuns
+            // Prepara dados
             const payload = {
-                nome: el('nome').value,
-                cpf: el('cpf').value.replace(/\D/g, ''),
-                telefone: el('telefone').value.replace(/\D/g, ''),
-                email: el('email').value,
-                unidade_id: el('unidade_id').value,
-                percentual_comissao: parseFloat(el('percentual_comissao').value),
-                // foto_base64: el('foto_base64').value // Se implementar upload
+                nome: document.getElementById('nome').value,
+                email: document.getElementById('email').value,
+                telefone: document.getElementById('telefone').value.replace(/\D/g, ''),
+                tipo: 'cliente' // Força o tipo
             };
+
+            // Se for criar, adiciona dados extras
+            if(!id) {
+                payload.cpf = document.getElementById('cpf').value.replace(/\D/g, '');
+                payload.senha = document.getElementById('senha').value;
+                payload.unidade_id = 1; // Default ou selecionável se necessário
+            }
 
             try {
                 if (id) {
-                    // API 11.3: Atualizar Barbeiro (PUT /api/barbeiros/:id)
-                    // Nota: A API 11.3 pede apenas nome e comissao no exemplo, mas mandamos tudo caso suporte
-                    await api.put(`/api/barbeiros/${id}`, payload);
+                    // API 11.7: Atualizar Cliente (PUT /api/clientes/:id)
+                    await api.put(`/api/clientes/${id}`, payload);
                 } else {
-                    // API Auth Especial: Registrar Barbeiro (POST /api/auth/barbeiros/registrar)
-                    payload.senha = el('senha').value; 
-                    await api.post('/api/auth/barbeiros/registrar', payload);
+                    // API Auth: Registrar Cliente (POST /api/auth/clientes/registrar)
+                    // Usamos a rota de auth pois cria login + perfil
+                    await api.post('/api/auth/clientes/registrar', payload);
                 }
                 
                 fecharModal();
-                carregarBarbeiros(); // Recarrega
+                carregarClientes(); // Recarrega lista
+                
+                // Feedback visual simples (pode ser substituído por Toast)
+                // alert("Operação realizada com sucesso!"); 
+
             } catch (error) {
-                alert("Erro: " + (error.response?.data?.erro || error.message));
+                const msg = error.response?.data?.erro || error.message || "Erro desconhecido.";
+                alert("Erro ao salvar: " + msg);
             } finally {
-                btn.innerText = "Salvar"; btn.disabled = false;
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+                btn.classList.remove('opacity-70');
             }
         });
 
-        // 6. EDITAR (API 11.2: Obter por ID)
+        // --- 5. CRUD: EDITAR (API 11.6) ---
         window.editar = async (id) => {
             try {
-                await carregarUnidadesNoSelect(); // Garante select populado
-                
-                const res = await api.get(`/api/barbeiros/${id}`);
+                const res = await api.get(`/api/clientes/${id}`);
                 if(res.data.sucesso) {
-                    const b = res.data.dados;
+                    const c = res.data.dados;
                     abrirModal(id);
                     // Preenche campos
-                    el('nome').value = b.nome;
-                    el('cpf').value = maskCPF(b.cpf);
-                    el('telefone').value = b.telefone; // Ideal aplicar máscara tel
-                    // el('email').value = b.email; // Se a API 11.2 trouxer email
-                    el('percentual_comissao').value = b.percentual_comissao;
-                    // Se a API trouxer unidade_id, seleciona:
-                    // el('unidade_id').value = b.unidade_id; 
+                    document.getElementById('nome').value = c.nome;
+                    document.getElementById('cpf').value = maskCPF(c.cpf);
+                    document.getElementById('email').value = c.email || '';
+                    document.getElementById('telefone').value = maskPhone(c.telefone);
                 }
-            } catch (error) { alert("Erro ao carregar dados."); }
+            } catch (error) { alert("Erro ao carregar dados do cliente."); }
         };
 
-        // 7. EXCLUIR (API 11.4: Inativar)
+        // --- 6. CRUD: EXCLUIR (API 11.8) ---
         window.excluir = async (id) => {
-            if(confirm("Deseja inativar este barbeiro?")) {
+            if(confirm("Tem certeza que deseja inativar este cliente? Ele perderá acesso ao App.")) {
                 try {
-                    await api.delete(`/api/barbeiros/${id}`);
-                    carregarBarbeiros();
-                } catch (error) { alert("Erro ao excluir."); }
+                    await api.delete(`/api/clientes/${id}`);
+                    carregarClientes();
+                } catch (error) { alert("Erro ao excluir cliente."); }
             }
         };
 
-        // Inicializa
-        carregarUnidadesNoSelect();
-        carregarBarbeiros();
+        // --- 7. BUSCA EM TEMPO REAL (DEBOUNCE) ---
+        inputBusca.addEventListener('input', (e) => {
+            const termo = e.target.value;
+            clearTimeout(searchTimeout);
+            
+            // Espera 500ms antes de chamar a API para não sobrecarregar
+            searchTimeout = setTimeout(() => {
+                carregarClientes(termo);
+            }, 500);
+        });
 
-        // Expõe globalmente
+        // --- INICIALIZAÇÃO ---
+        carregarClientes();
+
+        // Expõe funções para o HTML global
         window.editar = editar;
         window.excluir = excluir;
+
     </script>
 </body>
 </html>
